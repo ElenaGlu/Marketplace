@@ -3,9 +3,8 @@
 «MarketPlace»: приложение торговой площадки, которое связывает покупателя и продавца. Один тип пользователя - "Продавец" - выгружает свои товары в приложение, а а другой тип "Покупатель" может осуществлять покупку этих товаров.
 
 ### Исходный краткий план проекта:
-[14.final.drawio.pdf](https://github.com/ElenaGlu/MarketPlace/files/13349600/14.final.drawio.pdf)
 
-
+![14 final (1)](https://github.com/ElenaGlu/MarketPlace/assets/123466535/bbd7a2e3-ef3b-4796-b9cf-fdf56a3eb22b)
 
 ### Технологии:
 
