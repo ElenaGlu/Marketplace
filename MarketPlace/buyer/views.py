@@ -1,24 +1,21 @@
 import json
 
-from rest_framework import status
-from rest_framework.response import Response
+from django.http import HttpRequest, HttpResponse
 
-from models import Emails
-from models import ProfileBuyer
+from buyer.models import Emails
+from buyer.models import ProfileBuyer
 
 
-def register(request: json):
-    user_email = request['email']
-    if Emails.objects.filter(email=user_email):
-        if ProfileBuyer.objects.filter(email=user_email):
-            raise ValueError('Пользователь уже зарегистрирован')
+def register(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        data_register = json.loads(request.body)
+        user_email = data_register['email']
+        user = Emails.objects.filter(email=user_email).first()
+        if user:
+            if ProfileBuyer.objects.filter(email=user_email):
+                raise ValueError('Пользователь уже зарегистрирован')
         else:
-            user_id = Emails.objects.get(email=user_email)
-            ProfileBuyer.objects.create(email=user_id, name=request['name'],
-                                        surname=request['surname'], password=request['password'])
-            return Response(status=status.HTTP_201_CREATED)
-    else:
-        user = Emails.objects.create(email=request['email'])
-        ProfileBuyer.objects.create(email=user.id, name=request['name'],
-                                    surname=request['surname'], password=request['password'])
-        return Response(status=status.HTTP_201_CREATED)
+            user = Emails.objects.create(email=data_register['email'])
+        ProfileBuyer.objects.create(email=user.id, name=data_register['name'],
+                                    surname=data_register['surname'], password=data_register['password'])
+        return HttpResponse(status=201)

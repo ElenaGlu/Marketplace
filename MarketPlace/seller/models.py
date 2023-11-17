@@ -12,5 +12,5 @@ class ProfileSeller(models.Model):
     Individual_Taxpayer_Number = models.CharField(max_length=12)
     type_of_organization = models.IntegerField(choices=TYPE_ORGANIZATION)
     country_of_registration = CountryField()
-    password = models.CharField(max_length=150)
+    password = models.CharField(max_length=20)
     email = models.ForeignKey(Emails, on_delete=models.CASCADE)
