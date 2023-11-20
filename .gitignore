@@ -2,3 +2,4 @@
 .idea/
 *.exe
 project/.env
+.pytest_cache/
