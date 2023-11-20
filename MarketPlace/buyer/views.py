@@ -7,15 +7,21 @@ from buyer.models import ProfileBuyer
 
 
 def register(request: HttpRequest) -> HttpResponse:
+    """
+    Registers new users in the system.
+    :param request: JSON object containing strings: email, name, surname, password.
+    :return: "created" (201) response code
+    :raises ValueError: if the user is registered in the system
+    """
     if request.method == "POST":
-        data_register = json.loads(request.body)
-        user_email = data_register['email']
+        user_data = json.loads(request.body)
+        user_email = user_data['email']
         user = Emails.objects.filter(email=user_email).first()
         if user:
-            if ProfileBuyer.objects.filter(email=user_email):
+            if ProfileBuyer.objects.filter(email=user_email).first():
                 raise ValueError('Пользователь уже зарегистрирован')
         else:
-            user = Emails.objects.create(email=data_register['email'])
-        ProfileBuyer.objects.create(email=user.id, name=data_register['name'],
-                                    surname=data_register['surname'], password=data_register['password'])
+            user = Emails.objects.create(email=user_email)
+        ProfileBuyer.objects.create(email=user, name=user_data['name'],
+                                    surname=user_data['surname'], password=user_data['password'])
         return HttpResponse(status=201)
