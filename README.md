@@ -4,11 +4,11 @@
 
 ### Краткий план проекта:
 
-![14 final (1)](https://github.com/ElenaGlu/MarketPlace/assets/123466535/bbd7a2e3-ef3b-4796-b9cf-fdf56a3eb22b)
+
 
 ### Технологии:
 
-Python3, Django REST framework, PostgreSQL
+Python3, Django, PostgreSQL
 
 ### Запуск проекта на локальной машине:
 
