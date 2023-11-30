@@ -5,6 +5,8 @@
 ### Краткий план проекта:
 
 
+![nov](https://github.com/ElenaGlu/MarketPlace/assets/123466535/dc2c5527-c0aa-4451-bc7f-096caf9875a9)
+
 
 ### Технологии:
 
