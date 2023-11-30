@@ -44,6 +44,6 @@ def login(request: HttpRequest) -> HttpResponse:
         print(user)
         if user is not None:
             login(request, user)
-            return HttpResponse(status=200)
+            return HttpResponse(status=200)  #отдать список каталогов
         else:
             raise ValueError('invalid username or password')
