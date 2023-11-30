@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import config as c
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -7,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-odstg$bj#-#p+3f)7!-rx1l_%+7k5=d2dcpi6vxrr7-hhu_r@3'
+SECRET_KEY = c.DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -66,11 +69,11 @@ WSGI_APPLICATION = 'MarketPlace.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'marketplace',
-        'USER': 'lena',
-        'PASSWORD': '1',
+        'NAME': c.KEY_NAME,
+        'USER': c.KEY_USER,
+        'PASSWORD': c.KEY_PASSWORD,
         'HOST': 'localhost',
-        'PORT': '',
+        'PORT': 5432,
     }
 }
 

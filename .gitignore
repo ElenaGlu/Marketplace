@@ -1,5 +1,5 @@
 **/__pycache__/
 .idea/
 *.exe
-project/.env
+MarketPlace/.env
 .pytest_cache/
