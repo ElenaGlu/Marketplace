@@ -1,0 +1,24 @@
+[
+{
+"model": "seller.product",
+"pk": 1,
+"fields": {
+"store_name": "store_1",
+"title_product": "product_1",
+"description": "description_1",
+"quantity": "quantity_1",
+"price": 1
+}
+},
+{
+"model": "seller.product",
+"pk": 2,
+"fields": {
+"store_name": "store_2",
+"title_product": "product_2",
+"description": "description_2",
+"quantity": "quantity_2",
+"price": 1
+}
+}
+]

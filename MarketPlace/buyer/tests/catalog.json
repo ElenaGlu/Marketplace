@@ -1,0 +1,16 @@
+[
+{
+"model": "seller.catalog",
+"pk": 1,
+"fields": {
+"title_catalog": "home"
+}
+},
+{
+"model": "seller.catalog",
+"pk": 2,
+"fields": {
+"title_catalog": "furniture"
+}
+}
+]

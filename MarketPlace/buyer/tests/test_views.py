@@ -3,6 +3,8 @@ import json
 import pytest
 from django.urls import reverse
 
+from seller import models
+
 
 @pytest.mark.django_db
 def test_view_register(client):
@@ -29,3 +31,34 @@ def test_view_register(client):
 #     with pytest.raises(ValueError):
 #         data = json.dumps({'email': 'aa@mail.ru', 'password': '123'})
 #         client.post(url, data, content_type='application/json')
+
+@pytest.fixture()
+def create_data_db():
+    data = [
+        {
+            "model": "seller.catalog",
+            "pk": 1,
+            "fields": {
+                "title_catalog": "home"
+            }
+        },
+        {
+            "model": "seller.catalog",
+            "pk": 2,
+            "fields": {
+                "title_catalog": "furniture"
+            }
+        }
+    ]
+    lst = []
+    for item in data:
+        lst.append(models.Catalog(title_catalog=item['fields']['title_catalog']))
+    models.Catalog.objects.bulk_create(lst)
+
+
+@pytest.mark.django_db
+def test_get_products_from_catalog(client, create_data_db):
+    url = reverse('get_products_from_catalog')
+    data = json.dumps({'title_catalog': '1'})
+
+    response = client.post(url, data, content_type='application/json')

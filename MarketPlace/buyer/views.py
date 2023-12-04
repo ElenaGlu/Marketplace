@@ -59,5 +59,5 @@ def get_products_from_catalog(request: HttpRequest) -> QuerySet:
     """
     if request.method == "POST":
         title_catalog = json.loads(request.body)['title_catalog']
-        products = Product.objects.filter(catalogs__title_catalog=title_catalog)
+        products = Product.objects.filter(catalogs__id=title_catalog)
         return products
