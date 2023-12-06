@@ -2,11 +2,11 @@ import json
 
 from django.contrib.auth import authenticate
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import Email
 from buyer.models import ProfileBuyer
-from seller.models import Product
+from seller.models import Product, CatalogProduct
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -51,7 +51,7 @@ def register(request: HttpRequest) -> HttpResponse:
 #             raise ValueError('invalid username or password')
 
 
-def get_products_from_catalog(request: HttpRequest) -> QuerySet:
+def get_products_from_catalog(request: HttpRequest) -> HttpResponse:
     """
     Getting items related to a specific catalog.
     :param request: JSON object containing string: title_catalog.
@@ -59,5 +59,7 @@ def get_products_from_catalog(request: HttpRequest) -> QuerySet:
     """
     if request.method == "POST":
         title_catalog = json.loads(request.body)['title_catalog']
-        products = Product.objects.filter(catalogs__id=title_catalog)
-        return products
+        products = list(CatalogProduct.objects.filter(catalog_id=title_catalog).values('product_id'))
+        prod = list(Product.objects.filter(id=products[0]['product_id']).values())
+        return JsonResponse(prod, status=200, safe=False)
+
