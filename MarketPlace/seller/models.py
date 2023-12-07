@@ -25,7 +25,7 @@ class Product(models.Model):
     store_name = models.ForeignKey(ProfileSeller, on_delete=models.CASCADE)
     title_product = models.CharField(max_length=40)
     description = models.CharField(max_length=40)
-    quantity = models.CharField(max_length=40)
+    quantity = models.IntegerField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     catalogs = models.ManyToManyField(Catalog, through="CatalogProduct")
 

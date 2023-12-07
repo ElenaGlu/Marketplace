@@ -1,7 +1,5 @@
 import json
 
-from django.contrib.auth import authenticate
-from django.db.models import QuerySet
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import Email
@@ -51,15 +49,16 @@ def register(request: HttpRequest) -> HttpResponse:
 #             raise ValueError('invalid username or password')
 
 
-def get_products_from_catalog(request: HttpRequest) -> HttpResponse:
+def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
     """
     Getting items related to a specific catalog.
     :param request: JSON object containing string: title_catalog.
     :return: products included in the catalog
     """
     if request.method == "POST":
-        title_catalog = json.loads(request.body)['title_catalog']
-        products = list(CatalogProduct.objects.filter(catalog_id=title_catalog).values('product_id'))
-        prod = list(Product.objects.filter(id=products[0]['product_id']).values())
-        return JsonResponse(prod, status=200, safe=False)
+        obj = list(CatalogProduct.objects.filter(
+            catalog_id=json.loads(request.body)['title_catalog']).values('product_id')
+                        )
+        product = list(Product.objects.filter(id=obj[0]['product_id']).values())
+        return JsonResponse(product, status=200, safe=False)
 

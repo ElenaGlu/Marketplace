@@ -33,7 +33,7 @@ def test_view_register(client):
 #         client.post(url, data, content_type='application/json')
 
 @pytest.fixture()
-def complete_db():
+def fixture_email():
     email = [{
         "model": "buyer.Email",
         "pk": 1,
@@ -49,11 +49,14 @@ def complete_db():
             }
         }
     ]
-    lst = []
+    tmp_list = []
     for item in email:
-        lst.append(models.Email(email=item['fields']['email']))
-    models.Email.objects.bulk_create(lst)
+        tmp_list.append(models.Email(email=item['fields']['email']))
+    models.Email.objects.bulk_create(tmp_list)
 
+
+@pytest.fixture()
+def fixture_profile_seller(fixture_email):
     profile_seller = [
         {
             "model": "seller.ProfileSeller",
@@ -80,19 +83,22 @@ def complete_db():
             }
         }
     ]
-    lst_2 = []
+    tmp_list = []
     for item in profile_seller:
-        lst_2.append(models.ProfileSeller(store_name=item['fields']['store_name'],
-                                          Individual_Taxpayer_Number=item['fields']['Individual_Taxpayer_Number'],
-                                          type_of_organization=item['fields']['type_of_organization'],
-                                          country_of_registration=item['fields']['country_of_registration'],
-                                          password=item['fields']['password'],
-                                          email_id=item['fields']['email']
-                                          )
-                     )
-    models.ProfileSeller.objects.bulk_create(lst_2)
+        tmp_list.append(models.ProfileSeller(store_name=item['fields']['store_name'],
+                                             Individual_Taxpayer_Number=item['fields']['Individual_Taxpayer_Number'],
+                                             type_of_organization=item['fields']['type_of_organization'],
+                                             country_of_registration=item['fields']['country_of_registration'],
+                                             password=item['fields']['password'],
+                                             email_id=item['fields']['email']
+                                             )
+                        )
+    models.ProfileSeller.objects.bulk_create(tmp_list)
 
-    seller_catalog = [
+
+@pytest.fixture()
+def fixture_catalog():
+    catalog = [
         {
             "model": "seller.catalog",
             "pk": 1,
@@ -108,12 +114,15 @@ def complete_db():
             }
         }
     ]
-    lst_4 = []
-    for item in seller_catalog:
-        lst_4.append(models.Catalog(title_catalog=item['fields']['title_catalog']))
-    models.Catalog.objects.bulk_create(lst_4)
+    tmp_list = []
+    for item in catalog:
+        tmp_list.append(models.Catalog(title_catalog=item['fields']['title_catalog']))
+    models.Catalog.objects.bulk_create(tmp_list)
 
-    seller_product = [
+
+@pytest.fixture()
+def fixture_product(fixture_catalog):
+    product = [
         {
             "model": "seller.product",
             "pk": 1,
@@ -121,7 +130,7 @@ def complete_db():
                 "store_name": "1",
                 "title_product": "product_1",
                 "description": "description_1",
-                "quantity": "quantity_1",
+                "quantity": 1,
                 "price": 1,
                 "catalogs": "home"
             }
@@ -133,23 +142,26 @@ def complete_db():
                 "store_name": "2",
                 "title_product": "product_2",
                 "description": "description_2",
-                "quantity": "quantity_2",
+                "quantity": 2,
                 "price": 2,
                 "catalogs": "furniture"
             }
         }
     ]
-    lst_5 = []
-    for item in seller_product:
-        lst_5.append(models.Product(store_name_id=item['fields']['store_name'],
-                                    title_product=item['fields']['title_product'],
-                                    description=item['fields']['description'],
-                                    quantity=item['fields']['quantity'],
-                                    price=item['fields']['price']
-                                    )
-                     )
-    models.Product.objects.bulk_create(lst_5)
+    tmp_list = []
+    for item in product:
+        tmp_list.append(models.Product(store_name_id=item['fields']['store_name'],
+                                       title_product=item['fields']['title_product'],
+                                       description=item['fields']['description'],
+                                       quantity=item['fields']['quantity'],
+                                       price=item['fields']['price']
+                                       )
+                        )
+    models.Product.objects.bulk_create(tmp_list)
 
+
+@pytest.fixture()
+def fixture_catalog_product(fixture_product):
     catalog_product = [{
         "model": "seller.CatalogProduct",
         "pk": 1,
@@ -167,16 +179,16 @@ def complete_db():
             }
         }
     ]
-    lst_3 = []
+    tmp_list = []
     for item in catalog_product:
-        lst_3.append(models.CatalogProduct(product_id=item['fields']['product'],
-                                           catalog_id=item['fields']['catalog']))
-    models.CatalogProduct.objects.bulk_create(lst_3)
+        tmp_list.append(models.CatalogProduct(product_id=item['fields']['product'],
+                                              catalog_id=item['fields']['catalog']))
+    models.CatalogProduct.objects.bulk_create(tmp_list)
 
 
 @pytest.mark.django_db
-def test_get_products_from_catalog(client, complete_db):
-    url = reverse('get_products_from_catalog')
+def test_get_product_from_catalog(client, fixture_profile_seller, fixture_catalog_product):
+    url = reverse('get_product_from_catalog')
     data = json.dumps({"title_catalog": 1})
 
     response = client.post(url, data, content_type='application/json')
@@ -185,5 +197,5 @@ def test_get_products_from_catalog(client, complete_db):
                     'store_name_id': 1,
                     'title_product': 'product_1',
                     'description': 'description_1',
-                    'quantity': 'quantity_1',
+                    'quantity': 1,
                     'price': '1.00'}]
