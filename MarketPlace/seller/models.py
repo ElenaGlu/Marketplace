@@ -27,7 +27,7 @@ class Product(models.Model):
     description = models.CharField(max_length=40)
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    catalogs = models.ManyToManyField(Catalog, through="CatalogProduct")
+    catalog_product = models.ManyToManyField(Catalog, through="CatalogProduct")
 
 
 class CatalogProduct(models.Model):

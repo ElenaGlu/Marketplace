@@ -52,13 +52,26 @@ def register(request: HttpRequest) -> HttpResponse:
 def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
     """
     Getting items related to a specific catalog.
-    :param request: JSON object containing string: title_catalog.
+    :param request: JSON object containing string with id title_catalog.
     :return: products included in the catalog
     """
     if request.method == "POST":
         obj = list(CatalogProduct.objects.filter(
             catalog_id=json.loads(request.body)['title_catalog']).values('product_id')
-                        )
-        product = list(Product.objects.filter(id=obj[0]['product_id']).values())
-        return JsonResponse(product, status=200, safe=False)
+                   )
+        list_product = []
+        for elem in range(len(obj)):
+            product = list(Product.objects.filter(id=obj[elem]['product_id']).values('id', 'title_product', 'price'))
+            list_product.extend(product)
+        return JsonResponse(list_product, status=200, safe=False)
 
+
+def get_detail_product(request: HttpRequest) -> JsonResponse:
+    """
+    Getting detailed information about the product
+    :param request: JSON object containing string with id product
+    :return: detailed information about the product
+    """
+    if request.method == "POST":
+        detail_info_product = list(Product.objects.filter(id=json.loads(request.body)['id']).values())
+        return JsonResponse(detail_info_product, status=200, safe=False)
