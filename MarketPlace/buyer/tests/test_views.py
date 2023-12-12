@@ -34,7 +34,7 @@ def test_view_register(client):
 
 @pytest.fixture()
 def fixture_email():
-    email = ["user_1@mail.ru", "user_2@mail.ru"]
+    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru"]
     tmp_list = []
     for item in email:
         tmp_list.append(models.Email(email=item))
@@ -126,6 +126,25 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
     models.CatalogProduct.objects.bulk_create(tmp_list)
 
 
+@pytest.fixture()
+def fixture_profile_buyer(fixture_email):
+    profile_buyer = [
+        {
+            "name": "Ivan",
+            "surname": "Ivanovich",
+            "password": "1",
+            "email_id": fixture_email[2].id
+        }
+    ]
+    tmp_list = []
+    for item in profile_buyer:
+        tmp_list.append(buyer.models.ProfileBuyer(name=item['name'], surname=item['surname'],
+                                                  password=item['password'], email_id=item['email_id']
+                                                  )
+                        )
+    return buyer.models.ProfileBuyer.objects.bulk_create(tmp_list)
+
+
 @pytest.mark.django_db
 def test_get_product_from_catalog(client, fixture_profile_seller, fixture_catalog_product):
     url = reverse('get_product_from_catalog')
@@ -152,3 +171,12 @@ def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_prod
                     'quantity': 10,
                     'store_name_id': 1,
                     'title_product': 'computer table'}]
+
+
+# @pytest.mark.django_db
+# def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer):
+#     url = reverse('add_in_shop_cart')
+#     data = json.dumps({"id": 1, "user": 1})
+#     response = client.post(url, data, content_type='application/json')
+#
+#     assert response.status_code == 201

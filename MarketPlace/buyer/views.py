@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.models import Email
+from buyer.models import Email, ShoppingCart
 from buyer.models import ProfileBuyer
 from seller.models import Product, CatalogProduct
 
@@ -68,10 +68,27 @@ def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
 
 def get_detail_product(request: HttpRequest) -> JsonResponse:
     """
-    Getting detailed information about the product
+    Getting detailed information about the product.
     :param request: JSON object containing string with id product
     :return: detailed information about the product
     """
     if request.method == "POST":
         detail_info_product = list(Product.objects.filter(id=json.loads(request.body)['id']).values())
         return JsonResponse(detail_info_product, status=200, safe=False)
+
+
+# def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
+#     """
+#     Adding an item to the shopping cart by an authorized user.
+#     :param request: JSON object containing string with id product and
+#     :return: "OK" (200) response code
+#     """
+#     if request.method == "POST":
+#         # buyer =  # токен/ключ/сессия/авторизация/  id user and filter()
+#         product = Product.objects.filter(id=json.loads(request.body)['id'])
+#
+#         ShoppingCart.objects.create(buyer=buyer, product=product)
+#         return HttpResponse(status=200)
+
+
+
