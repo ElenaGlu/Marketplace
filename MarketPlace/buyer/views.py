@@ -1,10 +1,12 @@
+import os
+import hashlib
+
 import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.models import Email, ShoppingCart
-from buyer.models import ProfileBuyer
-from seller.models import Product, CatalogProduct
+from buyer.models import Email, ProfileBuyer
+from seller.models import CatalogProduct, Product
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -23,30 +25,26 @@ def register(request: HttpRequest) -> HttpResponse:
                 raise ValueError('the user is already registered')
         else:
             user = Email.objects.create(email=user_email)
+        salt = os.urandom(32)
+        key = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000)
         ProfileBuyer.objects.create(email=user, name=user_data['name'],
-                                    surname=user_data['surname'], password=user_data['password'])
+                                    surname=user_data['surname'], password=key)
         return HttpResponse(status=201)
 
 
-# def login(request: HttpRequest) -> HttpResponse:
-#     """
-#     User authorization in the system.
-#     :param request: JSON object containing strings: email, password.
-#     :return: "OK" (200) response code
-#     :raises ValueError: if the user entered an incorrect email or password
-#     """
-#     if request.method == "POST":
-#         user_data = json.loads(request.body)
-#         email = user_data['email']
-#         password = user_data['password']
-#
-#         user = authenticate(request, email=email, password=password)
-#         print(user)
-#         if user is not None:
-#             login(request, user)
-#             return HttpResponse(status=200)
-#         else:
-#             raise ValueError('invalid username or password')
+def login(request: HttpRequest) -> HttpResponse:
+    """
+    User authorization in the system.
+    :param request: JSON object containing strings: email, password.
+    :return: "OK" (200) response code
+    :raises ValueError: if the user entered an incorrect email or password
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        email = user_data['email']
+        password = user_data['password']
+
+        # raise ValueError('invalid username or password')
 
 
 def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
@@ -76,7 +74,6 @@ def get_detail_product(request: HttpRequest) -> JsonResponse:
         detail_info_product = list(Product.objects.filter(id=json.loads(request.body)['id']).values())
         return JsonResponse(detail_info_product, status=200, safe=False)
 
-
 # def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
 #     """
 #     Adding an item to the shopping cart by an authorized user.
@@ -89,6 +86,3 @@ def get_detail_product(request: HttpRequest) -> JsonResponse:
 #
 #         ShoppingCart.objects.create(buyer=buyer, product=product)
 #         return HttpResponse(status=200)
-
-
-

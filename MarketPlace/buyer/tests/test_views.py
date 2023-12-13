@@ -4,33 +4,8 @@ import pytest
 from django.urls import reverse
 
 from seller import models
+from buyer import models
 
-
-@pytest.mark.django_db
-def test_view_register(client):
-    url = reverse('register')
-    data = json.dumps({'email': 'john@mail.ru', 'name': 'john',
-                       'surname': 'piter', 'password': '123'})
-    response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 201
-
-    with pytest.raises(ValueError):
-        client.post(url, data, content_type='application/json')
-
-
-# @pytest.mark.django_db
-# def test_view_login(client):
-#
-#     create(username='john', email='john@mail.ru', password='123')
-#
-#     url = reverse('login')
-#     data = json.dumps({'email': 'john@mail.ru', 'password': '123'})
-#     response = client.post(url, data, content_type='application/json')
-#     assert response.status_code == 200
-#
-#     with pytest.raises(ValueError):
-#         data = json.dumps({'email': 'aa@mail.ru', 'password': '123'})
-#         client.post(url, data, content_type='application/json')
 
 @pytest.fixture()
 def fixture_email():
@@ -138,11 +113,37 @@ def fixture_profile_buyer(fixture_email):
     ]
     tmp_list = []
     for item in profile_buyer:
-        tmp_list.append(buyer.models.ProfileBuyer(name=item['name'], surname=item['surname'],
-                                                  password=item['password'], email_id=item['email_id']
-                                                  )
+        tmp_list.append(models.ProfileBuyer(name=item['name'], surname=item['surname'],
+                                            password=item['password'], email_id=item['email_id']
+                                            )
                         )
-    return buyer.models.ProfileBuyer.objects.bulk_create(tmp_list)
+    return models.ProfileBuyer.objects.bulk_create(tmp_list)
+
+
+@pytest.mark.django_db
+def test_view_register(client, fixture_profile_buyer):
+    url = reverse('register')
+    data = json.dumps({'email': 'john@mail.ru', 'name': 'john',
+                       'surname': 'piter', 'password': '123'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+    # with pytest.raises(ValueError):
+    #     data = json.dumps({'email': 'buyer_1@mail.ru', 'name': 'john',
+    #                        'surname': 'piter', 'password': '123'})
+    #     client.post(url, data, content_type='application/json')
+
+
+@pytest.mark.django_db
+def test_view_login(client, fixture_profile_buyer):
+    url = reverse('login')
+    data = json.dumps({'email': 'buyer_1@mail.ru', 'password': '1'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 200
+
+    # with pytest.raises(ValueError):
+    #     data = json.dumps({'email': 'aa@mail.ru', 'password': '123'})
+    #     client.post(url, data, content_type='application/json')
 
 
 @pytest.mark.django_db
@@ -171,7 +172,6 @@ def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_prod
                     'quantity': 10,
                     'store_name_id': 1,
                     'title_product': 'computer table'}]
-
 
 # @pytest.mark.django_db
 # def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer):

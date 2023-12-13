@@ -1,8 +1,6 @@
 from django.db import models
 from django_countries.fields import CountryField
 
-from buyer.models import Email
-
 
 class ProfileSeller(models.Model):
     TYPE_ORGANIZATION = (
@@ -14,7 +12,7 @@ class ProfileSeller(models.Model):
     type_of_organization = models.CharField(choices=TYPE_ORGANIZATION)
     country_of_registration = CountryField()
     password = models.CharField(max_length=20)
-    email = models.ForeignKey(Email, on_delete=models.CASCADE)
+    email = models.ForeignKey('buyer.Email', on_delete=models.CASCADE)
 
 
 class Catalog(models.Model):
