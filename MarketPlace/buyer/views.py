@@ -1,11 +1,15 @@
 import os
 import hashlib
 
+import jwt
+import datetime
+
 import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import Email, ProfileBuyer
+from config import DJANGO_SECRET_KEY
 from seller.models import CatalogProduct, Product
 
 
@@ -26,9 +30,14 @@ def register(request: HttpRequest) -> HttpResponse:
         else:
             user = Email.objects.create(email=user_email)
         salt = os.urandom(32)
-        key = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000)
-        ProfileBuyer.objects.create(email=user, name=user_data['name'],
-                                    surname=user_data['surname'], password=key)
+
+        ProfileBuyer.objects.create(
+            email=user,
+            name=user_data['name'],
+            surname=user_data['surname'],
+            password=hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
+        )
+
         return HttpResponse(status=201)
 
 
@@ -41,10 +50,18 @@ def login(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        email = user_data['email']
-        password = user_data['password']
-
-        # raise ValueError('invalid username or password')
+        obj = Email.objects.filter(email=user_data['email']).first()
+        if obj:
+            # salt = os.urandom(32)
+            salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
+            key = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
+            x = ProfileBuyer.objects.filter(email=obj).first().password
+            if x == key:
+                payload = {"sub": "admin", "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
+                token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
+                return JsonResponse(token, status=200, safe=False)
+            else:
+                raise ValueError('invalid username or password')
 
 
 def get_product_from_catalog(request: HttpRequest) -> JsonResponse:

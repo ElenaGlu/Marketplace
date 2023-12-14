@@ -1,4 +1,6 @@
+import hashlib
 import json
+import os
 
 import pytest
 from django.urls import reverse
@@ -103,11 +105,14 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
 
 @pytest.fixture()
 def fixture_profile_buyer(fixture_email):
+    # salt = os.urandom(32)
+    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
+    key = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_buyer = [
         {
             "name": "Ivan",
             "surname": "Ivanovich",
-            "password": "1",
+            "password": key,
             "email_id": fixture_email[2].id
         }
     ]
