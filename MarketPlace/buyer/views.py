@@ -12,6 +12,27 @@ from buyer.models import Email, ProfileBuyer
 from config import DJANGO_SECRET_KEY
 from seller.models import CatalogProduct, Product
 
+import smtplib
+import requests
+
+def send_notification(email, txt):
+    """
+    Sends an email to the specified address.
+    """
+    sender = 'lenashishalova@yandex.ru'
+    sender_password = 'gshzdrcgpvqlvvmb'
+    mail_lib = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
+    mail_lib.login(sender, sender_password)
+
+    for to_item in email:
+        msg = 'From: %s\r\nTo: %s\r\nContent-Type: text/plain; charset="utf-8"\r\nSubject: %s\r\n\r\n' % (
+            sender, to_item, 'Тема сообщения')
+        msg += txt
+        mail_lib.sendmail(sender, to_item, msg.encode('utf8'))
+    mail_lib.quit()
+
+ # def confirm():
+
 
 def register(request: HttpRequest) -> HttpResponse:
     """
@@ -28,9 +49,15 @@ def register(request: HttpRequest) -> HttpResponse:
             if ProfileBuyer.objects.filter(email=user_email).first():
                 raise ValueError('the user is already registered')
         else:
-            user = Email.objects.create(email=user_email)
-        salt = os.urandom(32)
 
+            payload = {"sub": "admin", "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
+            token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
+            # token save
+            send_notification([user_email], f'http://localhost/confirm?user={token}')
+
+            user = Email.objects.create(email=user_email)
+
+        salt = os.urandom(32)
         ProfileBuyer.objects.create(
             email=user,
             name=user_data['name'],
@@ -50,13 +77,13 @@ def login(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        obj = Email.objects.filter(email=user_data['email']).first()
-        if obj:
+        user = Email.objects.filter(email=user_data['email']).first()
+        if user:
             # salt = os.urandom(32)
             salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-            key = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
-            x = ProfileBuyer.objects.filter(email=obj).first().password
-            if x == key:
+            password_hash = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
+
+            if ProfileBuyer.objects.filter(email=user).first().password == password_hash:
                 payload = {"sub": "admin", "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
                 token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
                 return JsonResponse(token, status=200, safe=False)
@@ -91,15 +118,15 @@ def get_detail_product(request: HttpRequest) -> JsonResponse:
         detail_info_product = list(Product.objects.filter(id=json.loads(request.body)['id']).values())
         return JsonResponse(detail_info_product, status=200, safe=False)
 
-# def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
-#     """
-#     Adding an item to the shopping cart by an authorized user.
-#     :param request: JSON object containing string with id product and
-#     :return: "OK" (200) response code
-#     """
-#     if request.method == "POST":
-#         # buyer =  # токен/ключ/сессия/авторизация/  id user and filter()
-#         product = Product.objects.filter(id=json.loads(request.body)['id'])
-#
-#         ShoppingCart.objects.create(buyer=buyer, product=product)
-#         return HttpResponse(status=200)
+
+def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
+    """
+    Adding an item to the shopping cart by an authorized user.
+    :param request: JSON object containing string with id product and
+    :return: "OK" (200) response code
+    """
+    if request.method == "POST":
+        token = json.loads(request.body)
+        product = Product.objects.filter(id=json.loads(request.body)['id'])
+        # ShoppingCart.objects.create(buyer=buyer, product=product)
+        return HttpResponse(status=200)
