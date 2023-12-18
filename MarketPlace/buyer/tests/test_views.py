@@ -5,7 +5,6 @@ from django.urls import reverse
 import pytest
 
 
-
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
     url = reverse('register')
@@ -14,10 +13,13 @@ def test_register(client, fixture_profile_buyer):
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
 
-# def test_confirm(client):
-#     url = reverse('confirm')
-#     res = client.get(url,)
 
+@pytest.mark.django_db
+def test_confirm(client, fixture_token):
+    url = reverse('confirm')
+    data = {"token": "12345", "email": 'buyer_2@mail.ru'}
+    response = client.get(url, data)
+    assert response.status_code == 201
 
 
 @pytest.mark.django_db
@@ -57,11 +59,9 @@ def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_prod
 
 
 @pytest.mark.django_db
-def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer):
+def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer, fixture_token):
     url = reverse('add_in_shop_cart')
-    data = json.dumps({"id": 1, "token": "token"})
+    data = json.dumps({"id": 1, "token": "12345"})
     response = client.post(url, data, content_type='application/json')
 
     assert response.status_code == 201
-
-

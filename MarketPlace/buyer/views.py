@@ -8,19 +8,19 @@ import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.models import Email, ProfileBuyer
-from config import DJANGO_SECRET_KEY
+from buyer.models import Email, ProfileBuyer, Token, ShoppingCart
+from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD, SALT
 from seller.models import CatalogProduct, Product
 
 import smtplib
-import requests
+
 
 def send_notification(email, txt):
     """
     Sends an email to the specified address.
     """
-    sender = 'lenashishalova@yandex.ru'
-    sender_password = 'gshzdrcgpvqlvvmb'
+    sender = KEY_SENDER
+    sender_password = KEY_SENDER_PASSWORD
     mail_lib = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
     mail_lib.login(sender, sender_password)
 
@@ -31,7 +31,17 @@ def send_notification(email, txt):
         mail_lib.sendmail(sender, to_item, msg.encode('utf8'))
     mail_lib.quit()
 
- # def confirm():
+
+def confirm(request):
+    token = request.GET.get('token')
+    email = request.GET.get('email')
+    user = Email.objects.filter(email=email).first()
+    token_in_db = Token.objects.filter(email=user).first().token
+    if token == token_in_db:
+        ProfileBuyer.objects.filter(email=user).update(active_account=True)
+        return HttpResponse(status=201)
+    else:
+        return None
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -52,18 +62,21 @@ def register(request: HttpRequest) -> HttpResponse:
 
             payload = {"sub": "admin", "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
             token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
-            # token save
-            send_notification([user_email], f'http://localhost/confirm?user={token}')
 
             user = Email.objects.create(email=user_email)
+            Token.objects.create(
+                email=user,
+                token=token
+            )
 
-        salt = os.urandom(32)
-        ProfileBuyer.objects.create(
-            email=user,
-            name=user_data['name'],
-            surname=user_data['surname'],
-            password=hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
-        )
+            send_notification([user_email], f'http://localhost/confirm/?token={token}&email={user_email}')
+
+            ProfileBuyer.objects.create(
+                email=user,
+                name=user_data['name'],
+                surname=user_data['surname'],
+                password=hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), SALT, 100000).hex()
+            )
 
         return HttpResponse(status=201)
 
@@ -79,9 +92,7 @@ def login(request: HttpRequest) -> HttpResponse:
         user_data = json.loads(request.body)
         user = Email.objects.filter(email=user_data['email']).first()
         if user:
-            # salt = os.urandom(32)
-            salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-            password_hash = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
+            password_hash = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), SALT, 100000).hex()
 
             if ProfileBuyer.objects.filter(email=user).first().password == password_hash:
                 payload = {"sub": "admin", "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
@@ -126,7 +137,7 @@ def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
     :return: "OK" (200) response code
     """
     if request.method == "POST":
-        token = json.loads(request.body)
+        token = Token.objects.filter(token=json.loads(request.body)['token'])
         product = Product.objects.filter(id=json.loads(request.body)['id'])
-        # ShoppingCart.objects.create(buyer=buyer, product=product)
+        ShoppingCart.objects.create(buyer=buyer, product=product)
         return HttpResponse(status=200)

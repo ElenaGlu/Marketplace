@@ -4,7 +4,7 @@ from django.urls import path
 from buyer import views
 
 urlpatterns = [
-    # path('confirm/', views.confirm, name='confirm'),
+    path('confirm/', views.confirm, name='confirm'),
     path('shopping_cart/', views.add_in_shop_cart, name='add_in_shop_cart'),
     path('product/', views.get_detail_product, name='get_detail_product'),
     path('catalog/', views.get_product_from_catalog, name='get_product_from_catalog'),

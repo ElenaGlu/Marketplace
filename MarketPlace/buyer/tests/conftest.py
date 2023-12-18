@@ -1,13 +1,14 @@
 import hashlib
 import pytest
 
+from config import SALT
 from seller import models as s_models
 from buyer import models as b_models
 
 
 @pytest.fixture()
 def fixture_email():
-    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru"]
+    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru", "buyer_2@mail.ru"]
     tmp_list = []
     for item in email:
         tmp_list.append(b_models.Email(email=item))
@@ -101,9 +102,7 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
 
 @pytest.fixture()
 def fixture_profile_buyer(fixture_email):
-    # salt = os.urandom(32)
-    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
+    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), SALT, 100000).hex()
     profile_buyer = [
         {
             "name": "Ivan",
@@ -119,3 +118,17 @@ def fixture_profile_buyer(fixture_email):
                                               )
                         )
     return b_models.ProfileBuyer.objects.bulk_create(tmp_list)
+
+
+@pytest.fixture()
+def fixture_token(fixture_email):
+    token = [
+        {
+            "token": "12345",
+            "email_id": fixture_email[3].id
+        }
+    ]
+    tmp_list = []
+    for item in token:
+        tmp_list.append(b_models.Token(token=item['token'], email_id=item['email_id']))
+    return b_models.Token.objects.bulk_create(tmp_list)
