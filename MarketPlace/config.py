@@ -14,4 +14,4 @@ KEY_PASSWORD = os.getenv('KEY_PASSWORD')
 KEY_SENDER = os.getenv('KEY_SENDER')
 KEY_SENDER_PASSWORD = os.getenv('KEY_SENDER_PASSWORD')
 
-SALT = os.getenv('SALT')
+# SALT = os.getenv('SALT')

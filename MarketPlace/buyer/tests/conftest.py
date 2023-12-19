@@ -1,14 +1,14 @@
+import datetime
 import hashlib
 import pytest
 
-from config import SALT
 from seller import models as s_models
 from buyer import models as b_models
 
 
 @pytest.fixture()
 def fixture_email():
-    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru", "buyer_2@mail.ru"]
+    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru"]
     tmp_list = []
     for item in email:
         tmp_list.append(b_models.Email(email=item))
@@ -37,12 +37,13 @@ def fixture_profile_seller(fixture_email):
     ]
     tmp_list = []
     for item in profile_seller:
-        tmp_list.append(s_models.ProfileSeller(store_name=item['store_name'],
-                                               Individual_Taxpayer_Number=item['Individual_Taxpayer_Number'],
-                                               type_of_organization=item['type_of_organization'],
-                                               country_of_registration=item['country_of_registration'],
-                                               password=item['password'],
-                                               email_id=item['email_id']
+        tmp_list.append(s_models.ProfileSeller(
+            store_name=item['store_name'],
+            Individual_Taxpayer_Number=item['Individual_Taxpayer_Number'],
+            type_of_organization=item['type_of_organization'],
+            country_of_registration=item['country_of_registration'],
+            password=item['password'],
+            email_id=item['email_id']
                                                )
                         )
     return s_models.ProfileSeller.objects.bulk_create(tmp_list)
@@ -77,13 +78,14 @@ def fixture_product(fixture_catalog, fixture_profile_seller):
     ]
     tmp_list = []
     for item in product:
-        tmp_list.append(s_models.Product(store_name_id=item['store_name'],
-                                         title_product=item['title_product'],
-                                         description=item['description'],
-                                         quantity=item['quantity'],
-                                         price=item['price']
-                                         )
-                        )
+        tmp_list.append(s_models.Product(
+            store_name_id=item['store_name'],
+            title_product=item['title_product'],
+            description=item['description'],
+            quantity=item['quantity'],
+            price=item['price']
+                                        )
+        )
     return s_models.Product.objects.bulk_create(tmp_list)
 
 
@@ -102,21 +104,26 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
 
 @pytest.fixture()
 def fixture_profile_buyer(fixture_email):
-    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), SALT, 100000).hex()
+    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
+    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_buyer = [
         {
             "name": "Ivan",
             "surname": "Ivanovich",
             "password": password_hash,
-            "email_id": fixture_email[2].id
+            "email_id": fixture_email[2].id,
+            "active_account": False
         }
     ]
     tmp_list = []
     for item in profile_buyer:
-        tmp_list.append(b_models.ProfileBuyer(name=item['name'], surname=item['surname'],
-                                              password=item['password'], email_id=item['email_id']
-                                              )
-                        )
+        tmp_list.append(b_models.ProfileBuyer(
+            name=item['name'],
+            surname=item['surname'],
+            password=item['password'],
+            email_id=item['email_id'],
+            active_account=item['active_account'])
+        )
     return b_models.ProfileBuyer.objects.bulk_create(tmp_list)
 
 
@@ -125,10 +132,14 @@ def fixture_token(fixture_email):
     token = [
         {
             "token": "12345",
-            "email_id": fixture_email[3].id
+            "email_id": fixture_email[2].id,
+            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
         }
     ]
     tmp_list = []
     for item in token:
-        tmp_list.append(b_models.Token(token=item['token'], email_id=item['email_id']))
+        tmp_list.append(b_models.Token(
+            token=item['token'],
+            email_id=item['email_id'],
+            stop_date=item['stop_date']))
     return b_models.Token.objects.bulk_create(tmp_list)

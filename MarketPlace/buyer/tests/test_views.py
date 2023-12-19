@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.urls import reverse
@@ -8,16 +9,19 @@ import pytest
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
     url = reverse('register')
-    data = json.dumps({'email': 'shishalovae@mail.ru', 'name': 'john',
-                       'surname': 'piter', 'password': '123'})
+    data = json.dumps({'email': 'shishalovae@mail.ru', 'name': 'lena',
+                       'surname': 'shishalova', 'password': '123'})
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
 
 
 @pytest.mark.django_db
-def test_confirm(client, fixture_token):
+def test_confirm(client, fixture_token, fixture_profile_buyer):
     url = reverse('confirm')
-    data = {"token": "12345", "email": 'buyer_2@mail.ru'}
+    data = {
+        "token": "12345",
+        "email": 'buyer_1@mail.ru',
+        "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
     response = client.get(url, data)
     assert response.status_code == 201
 
@@ -59,7 +63,8 @@ def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_prod
 
 
 @pytest.mark.django_db
-def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer, fixture_token):
+def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer,
+                          fixture_token):
     url = reverse('add_in_shop_cart')
     data = json.dumps({"id": 1, "token": "12345"})
     response = client.post(url, data, content_type='application/json')

@@ -15,9 +15,15 @@ class ProfileBuyer(models.Model):
     active_account = models.BooleanField(default=False)
 
 
-class Token(models.Model):
+class TokenEmail(models.Model):
     email = models.ForeignKey(Email, on_delete=models.CASCADE)
     token = models.CharField()
+    stop_date = models.DateTimeField(default=None)
+
+
+class TokenMain(models.Model):
+    email = models.ForeignKey(Email, on_delete=models.CASCADE)
+    token_main = models.CharField()
 
 
 class ShoppingCart(models.Model):
