@@ -69,7 +69,7 @@ def send_notification(email, txt):
 
 def confirm(request):
     token = request.GET.get('token')
-    email = request.GET.get('email')
+    # email = request.GET.get('email')
     user = Email.objects.filter(email=email).first()
     token_in_db = TokenEmail.objects.filter(email=user).first().token
     if token == token_in_db:
@@ -136,11 +136,14 @@ def get_detail_product(request: HttpRequest) -> JsonResponse:
 def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
     """
     Adding an item to the shopping cart by an authorized user.
-    :param request: JSON object containing string with id product and
+    :param request: JSON object containing string with id product, user's email and user's main token
     :return: "OK" (200) response code
     """
     if request.method == "POST":
-        token = TokenMain.objects.filter(token=json.loads(request.body)['token_main'])
-        product = Product.objects.filter(id=json.loads(request.body)['id'])
-        ShoppingCart.objects.create(buyer=buyer, product=product)
+        email = Email.objects.filter(email=json.loads(request.body)['user']).first()
+        profile = ProfileBuyer.objects.filter(email=email).first()
+        token = TokenMain.objects.filter(email=email).first().token_main
+        if token == json.loads(request.body)['token_main']:
+            product = Product.objects.filter(id=json.loads(request.body)['id']).first()
+            ShoppingCart.objects.create(buyer=profile, product=product, quantity=json.loads(request.body)['quantity'])
         return HttpResponse(status=200)

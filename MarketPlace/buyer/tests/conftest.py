@@ -8,7 +8,7 @@ from buyer import models as b_models
 
 @pytest.fixture()
 def fixture_email():
-    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru"]
+    email = ["seller_1@mail.ru", "seller_2@mail.ru", "buyer_1@mail.ru", "buyer_2@mail.ru"]
     tmp_list = []
     for item in email:
         tmp_list.append(b_models.Email(email=item))
@@ -44,8 +44,8 @@ def fixture_profile_seller(fixture_email):
             country_of_registration=item['country_of_registration'],
             password=item['password'],
             email_id=item['email_id']
-                                               )
-                        )
+        )
+        )
     return s_models.ProfileSeller.objects.bulk_create(tmp_list)
 
 
@@ -84,7 +84,7 @@ def fixture_product(fixture_catalog, fixture_profile_seller):
             description=item['description'],
             quantity=item['quantity'],
             price=item['price']
-                                        )
+        )
         )
     return s_models.Product.objects.bulk_create(tmp_list)
 
@@ -113,6 +113,13 @@ def fixture_profile_buyer(fixture_email):
             "password": password_hash,
             "email_id": fixture_email[2].id,
             "active_account": False
+        },
+        {
+            "name": "Petr",
+            "surname": "Petrovich",
+            "password": password_hash,
+            "email_id": fixture_email[3].id,
+            "active_account": True
         }
     ]
     tmp_list = []
@@ -128,7 +135,7 @@ def fixture_profile_buyer(fixture_email):
 
 
 @pytest.fixture()
-def fixture_token(fixture_email):
+def fixture_token_confirm(fixture_email):
     token = [
         {
             "token": "12345",
@@ -138,8 +145,25 @@ def fixture_token(fixture_email):
     ]
     tmp_list = []
     for item in token:
-        tmp_list.append(b_models.Token(
+        tmp_list.append(b_models.TokenEmail(
             token=item['token'],
             email_id=item['email_id'],
             stop_date=item['stop_date']))
-    return b_models.Token.objects.bulk_create(tmp_list)
+    return b_models.TokenEmail.objects.bulk_create(tmp_list)
+
+
+@pytest.fixture()
+def fixture_token_main(fixture_email):
+    token = [
+        {
+            "token_main": "111",
+            "email_id": fixture_email[3].id,
+            # "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+        }
+    ]
+    tmp_list = []
+    for item in token:
+        tmp_list.append(b_models.TokenMain(
+            token_main=item['token_main'],
+            email_id=item['email_id']))
+    return b_models.TokenMain.objects.bulk_create(tmp_list)
