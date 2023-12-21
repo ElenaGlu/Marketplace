@@ -5,8 +5,6 @@ from django.urls import reverse
 
 import pytest
 
-from buyer.models import ShoppingCart
-
 
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
@@ -18,7 +16,7 @@ def test_register(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
-def test_confirm(client, fixture_token, fixture_profile_buyer):
+def test_confirm(client, fixture_token_confirm, fixture_profile_buyer):
     url = reverse('confirm')
     data = {
         "token": "12345",
@@ -68,6 +66,7 @@ def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_prod
 def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product, fixture_profile_buyer,
                           fixture_token_main):
     url = reverse('add_in_shop_cart')
-    data = json.dumps({"id": 1, "title_product": "flower", "quantity": 2, "user": "buyer_2@mail.ru", "token_main": "111"})
+    data = json.dumps(
+        {"id": 1, "title_product": "flower", "quantity": 2, "user": "buyer_2@mail.ru", "token_main": "111"})
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200
