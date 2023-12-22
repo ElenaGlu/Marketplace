@@ -4,6 +4,7 @@ from django.urls import path
 from buyer import views
 
 urlpatterns = [
+    path('repeat_notification/', views.repeat_notification, name='repeat_notification'),
     path('confirm/', views.confirm, name='confirm'),
     path('shopping_cart/', views.add_in_shop_cart, name='add_in_shop_cart'),
     path('product/', views.get_detail_product, name='get_detail_product'),

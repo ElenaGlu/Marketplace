@@ -5,6 +5,8 @@ from django.urls import reverse
 
 import pytest
 
+from buyer.models import ProfileBuyer
+
 
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
@@ -16,20 +18,27 @@ def test_register(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
+def test_repeat_notification(client, fixture_profile_buyer, fixture_token_confirm):
+    url = reverse('repeat_notification')
+    data = json.dumps({'email': 'elena.g.2023@list.ru'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
 def test_confirm(client, fixture_token_confirm, fixture_profile_buyer):
     url = reverse('confirm')
-    data = {
-        "token": "12345",
-        "email": 'buyer_1@mail.ru',
-        "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
+    data = {"token": "12345"}
     response = client.get(url, data)
+    x = ProfileBuyer.objects.all().values()
+    print(x)
     assert response.status_code == 201
 
 
 @pytest.mark.django_db
 def test_login(client, fixture_profile_buyer):
     url = reverse('login')
-    data = json.dumps({'email': 'buyer_1@mail.ru', 'password': '1'})
+    data = json.dumps({'email': 'elena.g.2023@list.ru', 'password': '1'})
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200
 

@@ -24,30 +24,45 @@ def register(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         user_email = user_data['email']
-        user = Email.objects.filter(email=user_email).first()
-        if user:
-            if ProfileBuyer.objects.filter(email=user_email).first():
+        email = Email.objects.filter(email=user_email).first()
+        if email:
+            if ProfileBuyer.objects.filter(email=email).first():
                 raise ValueError('the user is already registered')
         else:
-            stop_date = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-            payload = {"sub": "admin", "exp": stop_date}
-            token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
+            email = Email.objects.create(email=user_email)
 
-            user = Email.objects.create(email=user_email)
+            token_email = create_token()
             TokenEmail.objects.create(
-                email=user,
-                token=token,
-                stop_date=stop_date)
+                email=email,
+                token=token_email['token'],
+                stop_date=token_email['stop_date'])
 
-            send_notification([user_email], f'http://localhost/confirm/?token={token}&email={user_email}')
-            salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
+            password_hash = create_hash(user_data['password'])
             ProfileBuyer.objects.create(
-                email=user,
+                email=email,
                 name=user_data['name'],
                 surname=user_data['surname'],
-                password=hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
+                password=password_hash
             )
+            send_notification([user_email], f'http://localhost/confirm/?token={token_email}')
         return HttpResponse(status=201)
+
+
+def create_token():
+    """
+    Token generation.
+    """
+    stop_date = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    payload = {"sub": "admin", "exp": stop_date}
+    return {'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"), 'stop_date': stop_date}
+
+
+def create_hash(password):
+    """
+    Password hashing.
+    """
+    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
+    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000).hex()
 
 
 def send_notification(email, txt):
@@ -67,13 +82,29 @@ def send_notification(email, txt):
     mail_lib.quit()
 
 
+def repeat_notification(request: HttpRequest) -> HttpResponse:
+    """
+    Resend the email to the specified address.
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        user_email = user_data['email']
+        email = Email.objects.filter(email=user_email).first()
+        token_email = TokenEmail.objects.filter(email=email).first().token
+        if email:
+            send_notification([user_email], f'http://localhost/confirm/?token={token_email}')
+        else:
+            raise ValueError('it is necessary to register')
+        return HttpResponse(status=201)
+
+
 def confirm(request):
-    token = request.GET.get('token')
-    # email = request.GET.get('email')
-    user = Email.objects.filter(email=email).first()
-    token_in_db = TokenEmail.objects.filter(email=user).first().token
-    if token == token_in_db:
-        ProfileBuyer.objects.filter(email=user).update(active_account=True)
+    """
+    User activation after registration.
+    """
+    obj = TokenEmail.objects.filter(token=request.GET.get('token')).first().email
+    if obj:
+        ProfileBuyer.objects.filter(email=obj).update(active_account=True)
         return HttpResponse(status=201)
     else:
         raise ValueError('it is necessary to issue a token')
@@ -90,17 +121,15 @@ def login(request: HttpRequest) -> HttpResponse:
         user_data = json.loads(request.body)
         user = Email.objects.filter(email=user_data['email']).first()
         if user:
-            salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-            password_hash = hashlib.pbkdf2_hmac('sha256', user_data['password'].encode('utf-8'), salt, 100000).hex()
-
+            password_hash = create_hash(user_data['password'])
             if ProfileBuyer.objects.filter(email=user).first().password == password_hash:
-                payload = {"sub": "admin", "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)}
-                token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
+                token_main = create_token()
                 TokenMain.objects.create(
                     email=user,
-                    token_main=token
+                    token_main=token_main['token'],
+                    stop_date=token_main['stop_date']
                 )
-                return JsonResponse(token, status=200, safe=False)
+                return JsonResponse(token_main['token'], status=200, safe=False)
             else:
                 raise ValueError('invalid username or password')
 

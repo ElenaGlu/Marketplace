@@ -24,6 +24,7 @@ class TokenEmail(models.Model):
 class TokenMain(models.Model):
     email = models.ForeignKey(Email, on_delete=models.CASCADE)
     token_main = models.CharField()
+    stop_date = models.DateTimeField(default=None)
 
 
 class ShoppingCart(models.Model):
