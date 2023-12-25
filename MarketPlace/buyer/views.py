@@ -52,7 +52,7 @@ def create_token():
     """
     Token generation.
     """
-    stop_date = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
     payload = {"sub": "admin", "exp": stop_date}
     return {'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"), 'stop_date': stop_date}
 
@@ -90,11 +90,19 @@ def repeat_notification(request: HttpRequest) -> HttpResponse:
         user_data = json.loads(request.body)
         user_email = user_data['email']
         email = Email.objects.filter(email=user_email).first()
-        token_email = TokenEmail.objects.filter(email=email).first().token
-        if email:
-            send_notification([user_email], f'http://localhost/confirm/?token={token_email}')
+        activate = ProfileBuyer.objects.filter(email=email).first().active_account
+        if not activate:
+            stop_date = create_token()['stop_date']
+            token = create_token()['token']
+            if email:
+                TokenEmail.objects.filter(email=email).update(
+                    token=token,
+                    stop_date=stop_date)
+                send_notification([user_email], f'http://localhost/confirm/?token={token}')
+            else:
+                raise ValueError('it is necessary to register')
         else:
-            raise ValueError('it is necessary to register')
+            raise ValueError('The users email has been confirmed')
         return HttpResponse(status=201)
 
 
@@ -103,7 +111,9 @@ def confirm(request):
     User activation after registration.
     """
     obj = TokenEmail.objects.filter(token=request.GET.get('token')).first().email
-    if obj:
+    stop_date = TokenEmail.objects.filter(token=request.GET.get('token')).first().stop_date
+    now_date = datetime.datetime.now()
+    if obj and stop_date.timestamp() > now_date.timestamp():
         ProfileBuyer.objects.filter(email=obj).update(active_account=True)
         return HttpResponse(status=201)
     else:
@@ -171,8 +181,18 @@ def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         email = Email.objects.filter(email=json.loads(request.body)['user']).first()
         profile = ProfileBuyer.objects.filter(email=email).first()
-        token = TokenMain.objects.filter(email=email).first().token_main
-        if token == json.loads(request.body)['token_main']:
-            product = Product.objects.filter(id=json.loads(request.body)['id']).first()
-            ShoppingCart.objects.create(buyer=profile, product=product, quantity=json.loads(request.body)['quantity'])
+        token_main = json.loads(request.body)['token_main']
+
+        stop_date = TokenMain.objects.filter(token_main=token_main).first().stop_date
+        now_date = datetime.datetime.now()
+        if stop_date.timestamp() > now_date.timestamp():
+            if token_main == TokenMain.objects.filter(email=email).first().token_main:
+                product = Product.objects.filter(id=json.loads(request.body)['id']).first()
+                ShoppingCart.objects.create(
+                    buyer=profile,
+                    product=product,
+                    quantity=json.loads(request.body)['quantity'])
+        else:
+            raise ValueError('the token is invalid, need to log in')
+
         return HttpResponse(status=200)
