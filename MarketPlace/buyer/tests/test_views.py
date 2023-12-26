@@ -78,4 +78,4 @@ def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_produc
     data = json.dumps(
         {"id": 1, "title_product": "flower", "quantity": 2, "user": "buyer_2@mail.ru", "token_main": "111"})
     response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 200
+    assert response.status_code == 201

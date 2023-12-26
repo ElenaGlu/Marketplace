@@ -144,6 +144,12 @@ def login(request: HttpRequest) -> HttpResponse:
                 raise ValueError('invalid username or password')
 
 
+# def password_recovery(request: HttpRequest) -> HttpResponse:
+#     """
+#     Password recovery.
+#     """
+
+
 def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
     """
     Getting items related to a specific catalog.
@@ -172,27 +178,41 @@ def get_detail_product(request: HttpRequest) -> JsonResponse:
         return JsonResponse(detail_info_product, status=200, safe=False)
 
 
-def add_in_shop_cart(request: HttpRequest) -> HttpResponse:
+def authentication_decorator(func):
     """
-    Adding an item to the shopping cart by an authorized user.
-    :param request: JSON object containing string with id product, user's email and user's main token
-    :return: "OK" (200) response code
+    Token validation.
     """
-    if request.method == "POST":
-        email = Email.objects.filter(email=json.loads(request.body)['user']).first()
-        profile = ProfileBuyer.objects.filter(email=email).first()
-        token_main = json.loads(request.body)['token_main']
 
+    def wrapper(*args):
+        request = args[0]
+        token_main = json.loads(request.body)['token_main']
         stop_date = TokenMain.objects.filter(token_main=token_main).first().stop_date
         now_date = datetime.datetime.now()
         if stop_date.timestamp() > now_date.timestamp():
-            if token_main == TokenMain.objects.filter(email=email).first().token_main:
-                product = Product.objects.filter(id=json.loads(request.body)['id']).first()
-                ShoppingCart.objects.create(
-                    buyer=profile,
-                    product=product,
-                    quantity=json.loads(request.body)['quantity'])
+            user = TokenMain.objects.filter(token_main=token_main).first().email
         else:
             raise ValueError('the token is invalid, need to log in')
+        x = func(user, args[0])
+        return x
 
-        return HttpResponse(status=200)
+    return wrapper
+
+
+@authentication_decorator
+def add_in_shop_cart(user, *args) -> HttpResponse:
+    """
+    Adding an item to the shopping cart by an authorized user.
+    :param user: user's id
+    :param args: JSON object containing string with id product, user's email and user's main token
+    :return: "OK" (200) response code
+    """
+
+    request = args[0]
+    profile = ProfileBuyer.objects.filter(email=user).first()
+    product = Product.objects.filter(id=json.loads(request.body)['id']).first()
+    ShoppingCart.objects.create(
+        buyer=profile,
+        product=product,
+        quantity=json.loads(request.body)['quantity'])
+
+    return HttpResponse(status=201)
