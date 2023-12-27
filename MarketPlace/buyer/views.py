@@ -26,11 +26,12 @@ def register(request: HttpRequest) -> HttpResponse:
         else:
             email = Email.objects.create(email=user_email)
 
-            token_email = create_token()
+            data_token = create_token()
+            token = data_token['token']
             TokenEmail.objects.create(
                 email=email,
-                token_email=token_email['token'],
-                stop_date=token_email['stop_date'])
+                token_email=token,
+                stop_date=data_token['stop_date'])
 
             password_hash = create_hash(user_data['password'])
             ProfileBuyer.objects.create(
@@ -40,7 +41,7 @@ def register(request: HttpRequest) -> HttpResponse:
                 password=password_hash
             )
 
-            send_notification([user_email], f'http://localhost/confirm/?token={token_email}')
+            send_notification([user_email], f'http://localhost/confirm/?token={token}')
         return HttpResponse(status=201)
 
 
@@ -79,8 +80,8 @@ def confirm_email(request) -> HttpResponse:
     :return: "created" (201) response code
     :raises ValueError: if the token has expired
     """
-    obj = TokenEmail.objects.filter(token=request.GET.get('token')).first().email
-    stop_date = TokenEmail.objects.filter(token=request.GET.get('token')).first().stop_date
+    obj = TokenEmail.objects.filter(token_email=request.GET.get('token')).first().email
+    stop_date = TokenEmail.objects.filter(token_email=request.GET.get('token')).first().stop_date
     now_date = datetime.datetime.now()
     if obj and stop_date.timestamp() > now_date.timestamp():
         ProfileBuyer.objects.filter(email=obj).update(active_account=True)
@@ -168,10 +169,13 @@ def add_in_shop_cart(user, *args) -> HttpResponse:
     :return: "created" (201) response code
     """
     request = args[0]
+    data = json.loads(request.body)
     profile = ProfileBuyer.objects.filter(email=user).first()
-    product = Product.objects.filter(id=json.loads(request.body)['id']).first()
-    ShoppingCart.objects.create(
-        buyer=profile,
-        product=product,
-        quantity=json.loads(request.body)['quantity'])
+    product = Product.objects.filter(id=data['id_product']).first()
+    quantity = list(Product.objects.filter(id=data['id_product']).values('quantity'))
+    if data['quantity'] <= quantity[0]['quantity']:
+        ShoppingCart.objects.create(
+            buyer=profile,
+            product=product,
+            quantity=json.loads(request.body)['quantity'])
     return HttpResponse(status=201)

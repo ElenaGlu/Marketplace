@@ -23,20 +23,20 @@ def fixture_email():
 def fixture_profile_seller(fixture_email):
     profile_seller = [
         {
-            "store_name": "shop1",
-            "Individual_Taxpayer_Number": "12345",
+            "store_name": "seller_1",
+            "Individual_Taxpayer_Number": "111",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
-            "password": "1",
-            "email_id": fixture_email[0].id
+            "password": "111",
+            "email_id": fixture_email[0].id   # "seller_1@mail.ru"
         },
         {
-            "store_name": "shop2",
-            "Individual_Taxpayer_Number": "12345",
+            "store_name": "seller_2",
+            "Individual_Taxpayer_Number": "222",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
-            "password": "2",
-            "email_id": fixture_email[1].id
+            "password": "222",
+            "email_id": fixture_email[1].id   # "seller_2@mail.ru"
         }
     ]
     tmp_list = []
@@ -66,14 +66,14 @@ def fixture_catalog():
 def fixture_product(fixture_catalog, fixture_profile_seller):
     product = [
         {
-            "store_name": fixture_profile_seller[0].id,
+            "store_name": fixture_profile_seller[0].id,  # "seller_1"
             "title_product": "computer table",
             "description": "size:1500",
             "quantity": 10,
             "price": 1999,
         },
         {
-            "store_name": fixture_profile_seller[1].id,
+            "store_name": fixture_profile_seller[1].id,    # "seller_2"
             "title_product": "flower",
             "description": "ficus",
             "quantity": 5,
@@ -112,17 +112,17 @@ def fixture_profile_buyer(fixture_email):
     password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_buyer = [
         {
-            "name": "Ivan",
-            "surname": "Ivanovich",
+            "name": "elena",
+            "surname": "test_user",
             "password": password_hash,
-            "email_id": fixture_email[2].id,
+            "email_id": fixture_email[2].id,    # "elena.g.2023@list.ru"
             "active_account": False
         },
         {
-            "name": "Petr",
-            "surname": "Petrovich",
+            "name": "buyer_2",
+            "surname": "test",
             "password": password_hash,
-            "email_id": fixture_email[3].id,
+            "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"
             "active_account": True
         }
     ]
@@ -142,15 +142,15 @@ def fixture_profile_buyer(fixture_email):
 def fixture_token_email(fixture_email):
     token = [
         {
-            "token_email": "12345",
-            "email_id": fixture_email[2].id,
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            "token_email": "123",
+            "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
+            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]
     tmp_list = []
     for item in token:
         tmp_list.append(b_models.TokenEmail(
-            token_email=item['token'],
+            token_email=item['token_email'],
             email_id=item['email_id'],
             stop_date=item['stop_date']))
     return b_models.TokenEmail.objects.bulk_create(tmp_list)
@@ -161,8 +161,8 @@ def fixture_token_main(fixture_email):
     token = [
         {
             "token_main": "111",
-            "email_id": fixture_email[3].id,
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"
+            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]
     tmp_list = []

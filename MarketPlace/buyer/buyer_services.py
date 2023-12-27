@@ -12,7 +12,7 @@ def create_token() -> dict:
     JWT token generation
     :return: dict with a token and its expiration date, example {"token": "12345", "stop_date": 2023-12-27 10:37:08.84}
     """
-    stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+    stop_date = datetime.datetime.now() + datetime.timedelta(hours=24)
     payload = {"sub": "admin", "exp": stop_date}
     return {'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"), 'stop_date': stop_date}
 
@@ -37,7 +37,7 @@ def send_notification(email, txt) -> None:
 
     for to_item in email:
         msg = 'From: %s\r\nTo: %s\r\nContent-Type: text/plain; charset="utf-8"\r\nSubject: %s\r\n\r\n' % (
-            sender, to_item, 'Тема сообщения')
+            sender, to_item, 'confirm')
         msg += txt
         mail_lib.sendmail(sender, to_item, msg.encode('utf8'))
     mail_lib.quit()
