@@ -8,7 +8,11 @@ from buyer import models as b_models
 
 @pytest.fixture()
 def fixture_email():
-    email = ["seller_1@mail.ru", "seller_2@mail.ru", "elena.g.2023@list.ru", "buyer_2@mail.ru"]
+    email = [
+        "seller_1@mail.ru",
+        "seller_2@mail.ru",
+        "elena.g.2023@list.ru",
+        "buyer_2@mail.ru"]
     tmp_list = []
     for item in email:
         tmp_list.append(b_models.Email(email=item))
@@ -135,10 +139,10 @@ def fixture_profile_buyer(fixture_email):
 
 
 @pytest.fixture()
-def fixture_token_confirm(fixture_email):
+def fixture_token_email(fixture_email):
     token = [
         {
-            "token": "12345",
+            "token_email": "12345",
             "email_id": fixture_email[2].id,
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
         }
@@ -146,7 +150,7 @@ def fixture_token_confirm(fixture_email):
     tmp_list = []
     for item in token:
         tmp_list.append(b_models.TokenEmail(
-            token=item['token'],
+            token_email=item['token'],
             email_id=item['email_id'],
             stop_date=item['stop_date']))
     return b_models.TokenEmail.objects.bulk_create(tmp_list)

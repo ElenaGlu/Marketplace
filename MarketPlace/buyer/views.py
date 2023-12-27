@@ -1,17 +1,12 @@
-import hashlib
-
-import jwt
 import datetime
-
 import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.models import Email, ProfileBuyer, TokenEmail, ShoppingCart, TokenMain
-from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
-from seller.models import CatalogProduct, Product
+from buyer.buyer_services import create_token, create_hash, send_notification
 
-import smtplib
+from buyer.models import Email, ProfileBuyer, TokenEmail, ShoppingCart, TokenMain
+from seller.models import CatalogProduct, Product
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -34,7 +29,7 @@ def register(request: HttpRequest) -> HttpResponse:
             token_email = create_token()
             TokenEmail.objects.create(
                 email=email,
-                token=token_email['token'],
+                token_email=token_email['token'],
                 stop_date=token_email['stop_date'])
 
             password_hash = create_hash(user_data['password'])
@@ -44,47 +39,18 @@ def register(request: HttpRequest) -> HttpResponse:
                 surname=user_data['surname'],
                 password=password_hash
             )
+
             send_notification([user_email], f'http://localhost/confirm/?token={token_email}')
         return HttpResponse(status=201)
-
-
-def create_token():
-    """
-    Token generation.
-    """
-    stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
-    payload = {"sub": "admin", "exp": stop_date}
-    return {'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"), 'stop_date': stop_date}
-
-
-def create_hash(password):
-    """
-    Password hashing.
-    """
-    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000).hex()
-
-
-def send_notification(email, txt):
-    """
-    Sends an email to the specified address.
-    """
-    sender = KEY_SENDER
-    sender_password = KEY_SENDER_PASSWORD
-    mail_lib = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
-    mail_lib.login(sender, sender_password)
-
-    for to_item in email:
-        msg = 'From: %s\r\nTo: %s\r\nContent-Type: text/plain; charset="utf-8"\r\nSubject: %s\r\n\r\n' % (
-            sender, to_item, 'Тема сообщения')
-        msg += txt
-        mail_lib.sendmail(sender, to_item, msg.encode('utf8'))
-    mail_lib.quit()
 
 
 def repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     Resend the email to the specified address.
+    :param request: JSON object containing string: email.
+    :return: "created" (201) response code
+    :raises ValueError: if the user is not registered in the system
+    :raises ValueError: if the user has already confirmed their profile
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
@@ -92,12 +58,12 @@ def repeat_notification(request: HttpRequest) -> HttpResponse:
         email = Email.objects.filter(email=user_email).first()
         activate = ProfileBuyer.objects.filter(email=email).first().active_account
         if not activate:
-            stop_date = create_token()['stop_date']
-            token = create_token()['token']
+            data_token = create_token()
+            token = data_token['token']
             if email:
                 TokenEmail.objects.filter(email=email).update(
-                    token=token,
-                    stop_date=stop_date)
+                    token_email=token,
+                    stop_date=data_token['stop_date'])
                 send_notification([user_email], f'http://localhost/confirm/?token={token}')
             else:
                 raise ValueError('it is necessary to register')
@@ -106,9 +72,12 @@ def repeat_notification(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=201)
 
 
-def confirm(request):
+def confirm_email(request) -> HttpResponse:
     """
-    User activation after registration.
+    Confirms the user's profile.
+    :param request: url with token
+    :return: "created" (201) response code
+    :raises ValueError: if the token has expired
     """
     obj = TokenEmail.objects.filter(token=request.GET.get('token')).first().email
     stop_date = TokenEmail.objects.filter(token=request.GET.get('token')).first().stop_date
@@ -117,7 +86,7 @@ def confirm(request):
         ProfileBuyer.objects.filter(email=obj).update(active_account=True)
         return HttpResponse(status=201)
     else:
-        raise ValueError('it is necessary to issue a token')
+        raise ValueError('token is invalid')
 
 
 def login(request: HttpRequest) -> HttpResponse:
@@ -142,12 +111,6 @@ def login(request: HttpRequest) -> HttpResponse:
                 return JsonResponse(token_main['token'], status=200, safe=False)
             else:
                 raise ValueError('invalid username or password')
-
-
-# def password_recovery(request: HttpRequest) -> HttpResponse:
-#     """
-#     Password recovery.
-#     """
 
 
 def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
@@ -182,7 +145,6 @@ def authentication_decorator(func):
     """
     Token validation.
     """
-
     def wrapper(*args):
         request = args[0]
         token_main = json.loads(request.body)['token_main']
@@ -194,7 +156,6 @@ def authentication_decorator(func):
             raise ValueError('the token is invalid, need to log in')
         x = func(user, args[0])
         return x
-
     return wrapper
 
 
@@ -203,10 +164,9 @@ def add_in_shop_cart(user, *args) -> HttpResponse:
     """
     Adding an item to the shopping cart by an authorized user.
     :param user: user's id
-    :param args: JSON object containing string with id product, user's email and user's main token
-    :return: "OK" (200) response code
+    :param args: JSON object containing string with product's id
+    :return: "created" (201) response code
     """
-
     request = args[0]
     profile = ProfileBuyer.objects.filter(email=user).first()
     product = Product.objects.filter(id=json.loads(request.body)['id']).first()
@@ -214,5 +174,4 @@ def add_in_shop_cart(user, *args) -> HttpResponse:
         buyer=profile,
         product=product,
         quantity=json.loads(request.body)['quantity'])
-
     return HttpResponse(status=201)
