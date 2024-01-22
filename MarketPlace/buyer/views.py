@@ -3,10 +3,10 @@ import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.buyer_services import create_token, create_hash, send_notification
 
-from buyer.models import Email, ProfileBuyer, TokenEmail, ShoppingCart, TokenMain
+from buyer.models import ProfileBuyer, ShoppingCart, TokenMain
 from seller.models import CatalogProduct, Product
+from utils.Auth import Auth
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -18,31 +18,8 @@ def register(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        user_email = user_data['email']
-        email = Email.objects.filter(email=user_email).first()
-        if email:
-            if ProfileBuyer.objects.filter(email=email).first():
-                raise ValueError('the user is already registered')
-        else:
-            email = Email.objects.create(email=user_email)
-
-            data_token = create_token()
-            token = data_token['token']
-            TokenEmail.objects.create(
-                email=email,
-                token_email=token,
-                stop_date=data_token['stop_date'])
-
-            password_hash = create_hash(user_data['password'])
-            ProfileBuyer.objects.create(
-                email=email,
-                name=user_data['name'],
-                surname=user_data['surname'],
-                password=password_hash
-            )
-
-            send_notification([user_email], f'http://localhost/confirm/?token={token}')
-        return HttpResponse(status=201)
+        obj_auth = Auth()
+        return obj_auth.user_register(user_data)
 
 
 def repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -55,22 +32,8 @@ def repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        user_email = user_data['email']
-        email = Email.objects.filter(email=user_email).first()
-        activate = ProfileBuyer.objects.filter(email=email).first().active_account
-        if not activate:
-            data_token = create_token()
-            token = data_token['token']
-            if email:
-                TokenEmail.objects.filter(email=email).update(
-                    token_email=token,
-                    stop_date=data_token['stop_date'])
-                send_notification([user_email], f'http://localhost/confirm/?token={token}')
-            else:
-                raise ValueError('it is necessary to register')
-        else:
-            raise ValueError('The users email has been confirmed')
-        return HttpResponse(status=201)
+        obj_auth = Auth()
+        return obj_auth.user_repeat_notification(user_data)
 
 
 def confirm_email(request) -> HttpResponse:
@@ -80,14 +43,9 @@ def confirm_email(request) -> HttpResponse:
     :return: "created" (201) response code
     :raises ValueError: if the token has expired
     """
-    obj = TokenEmail.objects.filter(token_email=request.GET.get('token')).first().email
-    stop_date = TokenEmail.objects.filter(token_email=request.GET.get('token')).first().stop_date
-    now_date = datetime.datetime.now()
-    if obj and stop_date.timestamp() > now_date.timestamp():
-        ProfileBuyer.objects.filter(email=obj).update(active_account=True)
-        return HttpResponse(status=201)
-    else:
-        raise ValueError('token is invalid')
+    token = request.GET.get('token')
+    obj_auth = Auth()
+    return obj_auth.user_confirm_email(token)
 
 
 def login(request: HttpRequest) -> HttpResponse:
@@ -99,19 +57,8 @@ def login(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        user = Email.objects.filter(email=user_data['email']).first()
-        if user:
-            password_hash = create_hash(user_data['password'])
-            if ProfileBuyer.objects.filter(email=user).first().password == password_hash:
-                token_main = create_token()
-                TokenMain.objects.create(
-                    email=user,
-                    token_main=token_main['token'],
-                    stop_date=token_main['stop_date']
-                )
-                return JsonResponse(token_main['token'], status=200, safe=False)
-            else:
-                raise ValueError('invalid username or password')
+        obj_auth = Auth()
+        return obj_auth.user_login(user_data)
 
 
 def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
@@ -146,6 +93,7 @@ def authentication_decorator(func):
     """
     Token validation.
     """
+
     def wrapper(*args):
         request = args[0]
         token_main = json.loads(request.body)['token_main']
@@ -157,6 +105,7 @@ def authentication_decorator(func):
             raise ValueError('the token is invalid, need to log in')
         x = func(user, args[0])
         return x
+
     return wrapper
 
 
