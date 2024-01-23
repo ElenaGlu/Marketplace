@@ -1,12 +1,9 @@
-import datetime
 import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-
-from buyer.models import ProfileBuyer, ShoppingCart, TokenMain
-from seller.models import CatalogProduct, Product
-from utils.Auth import Auth
+from buyer.utils.shop import Shop, authentication_decorator
+from buyer.utils.auth import BuyerAuth
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -18,7 +15,7 @@ def register(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        obj_auth = Auth()
+        obj_auth = BuyerAuth()
         return obj_auth.user_register(user_data)
 
 
@@ -32,7 +29,7 @@ def repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        obj_auth = Auth()
+        obj_auth = BuyerAuth()
         return obj_auth.user_repeat_notification(user_data)
 
 
@@ -44,7 +41,7 @@ def confirm_email(request) -> HttpResponse:
     :raises ValueError: if the token has expired
     """
     token = request.GET.get('token')
-    obj_auth = Auth()
+    obj_auth = BuyerAuth()
     return obj_auth.user_confirm_email(token)
 
 
@@ -57,7 +54,7 @@ def login(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
-        obj_auth = Auth()
+        obj_auth = BuyerAuth()
         return obj_auth.user_login(user_data)
 
 
@@ -68,14 +65,9 @@ def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
     :return: products included in the catalog
     """
     if request.method == "POST":
-        obj = list(CatalogProduct.objects.filter(
-            catalog_id=json.loads(request.body)['title_catalog']).values('product_id')
-                   )
-        list_product = []
-        for elem in range(len(obj)):
-            product = list(Product.objects.filter(id=obj[elem]['product_id']).values('id', 'title_product', 'price'))
-            list_product.extend(product)
-        return JsonResponse(list_product, status=200, safe=False)
+        title_catalog = json.loads(request.body)
+        obj_shop = Shop()
+        return obj_shop.shop_get_product_from_catalog(title_catalog)
 
 
 def get_detail_product(request: HttpRequest) -> JsonResponse:
@@ -85,28 +77,9 @@ def get_detail_product(request: HttpRequest) -> JsonResponse:
     :return: detailed information about the product
     """
     if request.method == "POST":
-        detail_info_product = list(Product.objects.filter(id=json.loads(request.body)['id']).values())
-        return JsonResponse(detail_info_product, status=200, safe=False)
-
-
-def authentication_decorator(func):
-    """
-    Token validation.
-    """
-
-    def wrapper(*args):
-        request = args[0]
-        token_main = json.loads(request.body)['token_main']
-        stop_date = TokenMain.objects.filter(token_main=token_main).first().stop_date
-        now_date = datetime.datetime.now()
-        if stop_date.timestamp() > now_date.timestamp():
-            user = TokenMain.objects.filter(token_main=token_main).first().email
-        else:
-            raise ValueError('the token is invalid, need to log in')
-        x = func(user, args[0])
-        return x
-
-    return wrapper
+        obj = json.loads(request.body)
+        obj_shop = Shop()
+        return obj_shop.shop_get_detail_product(obj)
 
 
 @authentication_decorator
@@ -119,12 +92,6 @@ def add_in_shop_cart(user, *args) -> HttpResponse:
     """
     request = args[0]
     data = json.loads(request.body)
-    profile = ProfileBuyer.objects.filter(email=user).first()
-    product = Product.objects.filter(id=data['id_product']).first()
-    quantity = list(Product.objects.filter(id=data['id_product']).values('quantity'))
-    if data['quantity'] <= quantity[0]['quantity']:
-        ShoppingCart.objects.create(
-            buyer=profile,
-            product=product,
-            quantity=json.loads(request.body)['quantity'])
-    return HttpResponse(status=201)
+    obj_shop = Shop()
+    return obj_shop.shop_add_in_shop_cart(user, request, data)
+

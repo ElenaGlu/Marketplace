@@ -3,6 +3,20 @@ import json
 from django.http import HttpRequest, HttpResponse
 
 from seller.models import Product, CatalogProduct
+from seller.utils.auth import SellerAuth
+
+
+def seller_register(request: HttpRequest) -> HttpResponse:
+    """
+    Registration of a new user in the system.
+    :param request: JSON object containing strings:
+    :return: "created" (201) response code
+    :raises ValueError: if the user is registered in the system
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = SellerAuth()
+        return obj_auth.user_register(user_data)
 
 
 def load_product(request: HttpRequest) -> HttpResponse:

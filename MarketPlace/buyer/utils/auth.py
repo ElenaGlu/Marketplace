@@ -10,7 +10,7 @@ import jwt
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 
 
-class Auth:
+class BuyerAuth:
 
     @staticmethod
     def user_register(user_data):
