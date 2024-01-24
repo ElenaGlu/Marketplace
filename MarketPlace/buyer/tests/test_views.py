@@ -7,7 +7,7 @@ import pytest
 
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
-    url = reverse('register')
+    url = reverse('buyer_register')
     data = json.dumps({
         'email': 'shishalovae@mail.ru',
         'name': 'user',
@@ -20,7 +20,7 @@ def test_register(client, fixture_profile_buyer):
 
 @pytest.mark.django_db
 def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email):
-    url = reverse('repeat_notification')
+    url = reverse('buyer_repeat_notification')
     data = json.dumps({'email': 'elena.g.2023@list.ru'})
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
@@ -28,7 +28,7 @@ def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email)
 
 @pytest.mark.django_db
 def test_confirm_email(client, fixture_token_email, fixture_profile_buyer):
-    url = reverse('confirm_email')
+    url = reverse('buyer_confirm_email')
     data = {"token": "123"}
     response = client.get(url, data)
     assert response.status_code == 201
@@ -36,7 +36,7 @@ def test_confirm_email(client, fixture_token_email, fixture_profile_buyer):
 
 @pytest.mark.django_db
 def test_login(client, fixture_profile_buyer):
-    url = reverse('login')
+    url = reverse('buyer_login')
     data = json.dumps({
         'email': 'elena.g.2023@list.ru',
         'password': '1'})
@@ -46,7 +46,7 @@ def test_login(client, fixture_profile_buyer):
 
 @pytest.mark.django_db
 def test_get_product_from_catalog(client, fixture_profile_seller, fixture_catalog_product):
-    url = reverse('get_product_from_catalog')
+    url = reverse('buyer_get_product_from_catalog')
     data = json.dumps({"title_catalog": 1})
     response = client.post(url, data, content_type='application/json')
     res = response.json()
@@ -58,7 +58,7 @@ def test_get_product_from_catalog(client, fixture_profile_seller, fixture_catalo
 
 @pytest.mark.django_db
 def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_product):
-    url = reverse('get_detail_product')
+    url = reverse('buyer_get_detail_product')
     data = json.dumps({"id": 1})
     response = client.post(url, data, content_type='application/json').json()
     assert response == [{

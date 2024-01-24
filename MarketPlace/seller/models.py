@@ -13,6 +13,7 @@ class ProfileSeller(models.Model):
     country_of_registration = CountryField()
     password = models.CharField(max_length=150)
     email = models.ForeignKey('buyer.Email', on_delete=models.CASCADE)
+    active_account = models.BooleanField(default=False)
 
 
 class Catalog(models.Model):

@@ -21,22 +21,26 @@ def fixture_email():
 
 @pytest.fixture()
 def fixture_profile_seller(fixture_email):
+    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
+    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_seller = [
         {
             "store_name": "seller_1",
             "Individual_Taxpayer_Number": "111",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
-            "password": "111",
-            "email_id": fixture_email[0].id   # "seller_1@mail.ru"
+            "password": password_hash,
+            "email_id": fixture_email[2].id,  # ("seller_1@mail.ru")   "elena.g.2023@list.ru"
+            "active_account": False
         },
         {
             "store_name": "seller_2",
             "Individual_Taxpayer_Number": "222",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
-            "password": "222",
-            "email_id": fixture_email[1].id   # "seller_2@mail.ru"
+            "password": password_hash,
+            "email_id": fixture_email[1].id,   # "seller_2@mail.ru"
+            "active_account": True
         }
     ]
     tmp_list = []
@@ -47,7 +51,8 @@ def fixture_profile_seller(fixture_email):
             type_of_organization=item['type_of_organization'],
             country_of_registration=item['country_of_registration'],
             password=item['password'],
-            email_id=item['email_id']
+            email_id=item['email_id'],
+            active_account=item['active_account']
         )
         )
     return s_models.ProfileSeller.objects.bulk_create(tmp_list)
@@ -142,7 +147,7 @@ def fixture_profile_buyer(fixture_email):
 def fixture_token_email(fixture_email):
     token = [
         {
-            "token_email": "123",
+            "token": "123",
             "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
@@ -150,7 +155,7 @@ def fixture_token_email(fixture_email):
     tmp_list = []
     for item in token:
         tmp_list.append(b_models.TokenEmail(
-            token_email=item['token_email'],
+            token=item['token'],
             email_id=item['email_id'],
             stop_date=item['stop_date']))
     return b_models.TokenEmail.objects.bulk_create(tmp_list)
@@ -160,7 +165,7 @@ def fixture_token_email(fixture_email):
 def fixture_token_main(fixture_email):
     token = [
         {
-            "token_main": "111",
+            "token": "111",
             "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
@@ -168,7 +173,7 @@ def fixture_token_main(fixture_email):
     tmp_list = []
     for item in token:
         tmp_list.append(b_models.TokenMain(
-            token_main=item['token_main'],
+            token=item['token'],
             email_id=item['email_id'],
             stop_date=item['stop_date']))
     return b_models.TokenMain.objects.bulk_create(tmp_list)
