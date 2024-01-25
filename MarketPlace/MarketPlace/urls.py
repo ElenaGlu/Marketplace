@@ -11,9 +11,9 @@ urlpatterns = [
     path('buyer_repeat_notification/', b.buyer_repeat_notification, name='buyer_repeat_notification'),
     path('buyer_confirm_email/', b.buyer_confirm_email, name='buyer_confirm_email'),
     path('buyer_login/', b.buyer_login, name='buyer_login'),
-    path('catalog/', b.get_product_from_catalog, name='get_product_from_catalog'),
-    path('product/', b.get_detail_product, name='get_detail_product'),
-    path('shopping_cart/', b.add_in_shop_cart, name='add_in_shop_cart'),
+    path('buyer_catalog/', b.buyer_selects_products_by_category, name='buyer_selects_products_by_category'),
+    path('buyer_product/', b.buyer_detail_product, name='buyer_detail_product'),
+    path('buyer_add_cart/', b.buyer_add_cart, name='buyer_add_cart'),
 
 
 

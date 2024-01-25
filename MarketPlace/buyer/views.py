@@ -4,7 +4,7 @@ from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import ProfileBuyer
 from utils.access import Access
-from buyer.shop import Shop, authentication_decorator
+from buyer.buyer_services.shop import Shop, authentication_decorator
 
 
 def buyer_register(request: HttpRequest) -> HttpResponse:
@@ -17,7 +17,7 @@ def buyer_register(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.user_register(user_data, ProfileBuyer)
+        return obj_auth.register(user_data, ProfileBuyer)
 
 
 def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -31,7 +31,7 @@ def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.user_repeat_notification(user_data, ProfileBuyer)
+        return obj_auth.repeat_notification(user_data, ProfileBuyer)
 
 
 def buyer_confirm_email(request) -> HttpResponse:
@@ -43,7 +43,7 @@ def buyer_confirm_email(request) -> HttpResponse:
     """
     token = request.GET.get('token')
     obj_auth = Access()
-    return obj_auth.user_confirm_email(token, ProfileBuyer)
+    return obj_auth.confirm_email(token, ProfileBuyer)
 
 
 def buyer_login(request: HttpRequest) -> JsonResponse:
@@ -56,42 +56,41 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.user_login(user_data, ProfileBuyer)
+        return obj_auth.login(user_data, ProfileBuyer)
 
 
-def get_product_from_catalog(request: HttpRequest) -> JsonResponse:
+def buyer_selects_products_by_category(request: HttpRequest) -> JsonResponse:
     """
-    Getting items related to a specific catalog.
-    :param request: JSON object containing string with id title_catalog
+    Selection of products included in a specific catalog.
+    :param request: JSON object containing string with id catalog
     :return: products included in the catalog
     """
     if request.method == "POST":
-        title_catalog = json.loads(request.body)
+        catalog = json.loads(request.body)
         obj_shop = Shop()
-        return obj_shop.shop_get_product_from_catalog(title_catalog)
+        return obj_shop.selects_products_by_category(catalog)
 
 
-def get_detail_product(request: HttpRequest) -> JsonResponse:
+def buyer_detail_product(request: HttpRequest) -> JsonResponse:
     """
-    Getting detailed information about the product.
+    Detailed information about the product.
     :param request: JSON object containing string with id product
     :return: detailed information about the product
     """
     if request.method == "POST":
         obj = json.loads(request.body)
         obj_shop = Shop()
-        return obj_shop.shop_get_detail_product(obj)
+        return obj_shop.detail_product(obj)
 
 
 @authentication_decorator
-def add_in_shop_cart(user, *args) -> HttpResponse:
+def buyer_add_cart(email, request) -> HttpResponse:
     """
-    Adding an item to the shopping cart by an authorized user.
-    :param user: user's id
-    :param args: JSON object containing string with product's id
+    Authorized user adds the item to the shopping cart for further buying.
+    :param request:
+    :param email:
     :return: "created" (201) response code
     """
-    request = args[0]
     data = json.loads(request.body)
     obj_shop = Shop()
-    return obj_shop.shop_add_in_shop_cart(user, request, data)
+    return obj_shop.add_cart(email, data)

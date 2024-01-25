@@ -1,21 +1,22 @@
-from django.http import HttpResponse, JsonResponse
-from buyer.models import Email, TokenEmail, TokenMain
-
 import datetime
+
 import hashlib
 import smtplib
-
 import jwt
 
+from django.http import HttpResponse, JsonResponse
+
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
+from buyer.models import Email, TokenEmail, TokenMain
 
 
 class Access:
     """
     Get access to the application.
     """
+
     @staticmethod
-    def user_register(user_data, profile_type) -> HttpResponse:
+    def register(user_data, profile_type) -> HttpResponse:
         """
         Registration of a new user in the system.
         :param profile_type: object - buyer or seller
@@ -43,7 +44,7 @@ class Access:
         return HttpResponse(status=201)
 
     @staticmethod
-    def user_repeat_notification(user_data, profile_type) -> HttpResponse:
+    def repeat_notification(user_data, profile_type) -> HttpResponse:
         """
         Resend the email to the specified address.
         :param profile_type: object - buyer or seller
@@ -69,7 +70,7 @@ class Access:
         return HttpResponse(status=201)
 
     @staticmethod
-    def user_confirm_email(token, profile_type) -> HttpResponse:
+    def confirm_email(token, profile_type) -> HttpResponse:
         """
         Confirms the user's profile.
         :param profile_type: object - buyer or seller
@@ -87,7 +88,7 @@ class Access:
             raise ValueError('token is invalid')
 
     @staticmethod
-    def user_login(user_data, profile_type) -> JsonResponse:
+    def login(user_data, profile_type) -> JsonResponse:
         """
         User authorization in the system.
         :param profile_type:  object - buyer or seller

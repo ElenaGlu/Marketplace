@@ -21,7 +21,7 @@ def seller_register(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.user_register(user_data, ProfileSeller)
+        return obj_auth.register(user_data, ProfileSeller)
 
 
 def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -35,7 +35,7 @@ def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.user_repeat_notification(user_data, ProfileSeller)
+        return obj_auth.repeat_notification(user_data, ProfileSeller)
 
 
 def seller_confirm_email(request) -> HttpResponse:
@@ -47,7 +47,7 @@ def seller_confirm_email(request) -> HttpResponse:
     """
     token = request.GET.get('token')
     obj_auth = Access()
-    return obj_auth.user_confirm_email(token, ProfileSeller)
+    return obj_auth.confirm_email(token, ProfileSeller)
 
 
 def seller_login(request: HttpRequest) -> JsonResponse:
@@ -60,7 +60,7 @@ def seller_login(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.user_login(user_data, ProfileSeller)
+        return obj_auth.login(user_data, ProfileSeller)
 
 
 def load_product(request: HttpRequest) -> HttpResponse:

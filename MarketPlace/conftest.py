@@ -1,4 +1,5 @@
 import datetime
+
 import hashlib
 import pytest
 
@@ -177,3 +178,21 @@ def fixture_token_main(fixture_email):
             email_id=item['email_id'],
             stop_date=item['stop_date']))
     return b_models.TokenMain.objects.bulk_create(tmp_list)
+
+
+@pytest.fixture()
+def fixture_shopping_cart(fixture_catalog_product, fixture_profile_buyer, fixture_email):
+    shopping_cart = [
+        {
+            "product_id": 1,
+            "buyer_id": fixture_email[2].id,   # "elena.g.2023@list.ru"
+            "quantity": 2
+        }
+    ]
+    tmp_list = []
+    for item in shopping_cart:
+        tmp_list.append(b_models.ShoppingCart(
+            product_id=item['product_id'],
+            buyer_id=item['buyer_id'],
+            quantity=item['quantity']))
+    return b_models.ShoppingCart.objects.bulk_create(tmp_list)

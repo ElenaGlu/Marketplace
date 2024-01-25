@@ -1,8 +1,8 @@
 import json
 
-from django.urls import reverse
-
 import pytest
+
+from django.urls import reverse
 
 
 @pytest.mark.django_db
@@ -45,41 +45,40 @@ def test_login(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
-def test_get_product_from_catalog(client, fixture_profile_seller, fixture_catalog_product):
-    url = reverse('buyer_get_product_from_catalog')
-    data = json.dumps({"title_catalog": 1})
-    response = client.post(url, data, content_type='application/json')
-    res = response.json()
-    assert res == [
+def test_selects_products_by_category(client, fixture_profile_seller, fixture_catalog_product):
+    url = reverse('buyer_selects_products_by_category')
+    data = json.dumps({"catalog": 1})
+    response = client.post(url, data, content_type='application/json').json()
+    assert response == [
         {'id': 1, 'price': '1999.00', 'title_product': 'computer table'},
         {'id': 2, 'price': '799.00', 'title_product': 'flower'}
     ]
 
 
 @pytest.mark.django_db
-def test_get_detail_product(client, fixture_profile_seller, fixture_catalog_product):
-    url = reverse('buyer_get_detail_product')
+def test_detail_product(client, fixture_profile_seller, fixture_catalog_product):
+    url = reverse('buyer_detail_product')
     data = json.dumps({"id": 1})
     response = client.post(url, data, content_type='application/json').json()
-    assert response == [{
-        'description': 'size:1500',
-        'id': 1,
-        'price': '1999.00',
-        'quantity': 10,
-        'store_name_id': 1,
-        'title_product': 'computer table'}]
+    assert response == [
+        {'description': 'size:1500',
+         'id': 1,
+         'price': '1999.00',
+         'quantity': 10,
+         'store_name_id': 1,
+         'title_product': 'computer table'}
+    ]
 
 
 @pytest.mark.django_db
-def test_add_in_shop_cart(client, fixture_profile_seller, fixture_catalog_product,
-                          fixture_profile_buyer, fixture_token_main):
-    url = reverse('add_in_shop_cart')
-    data = json.dumps({
-        "user": "buyer_2@mail.ru",
-        "token_main": "111",
-        "id_product": 1,
-        "quantity": 2
-       }
+def test_add_cart(client, fixture_profile_seller, fixture_catalog_product,
+                  fixture_profile_buyer, fixture_token_main, fixture_shopping_cart):
+    url = reverse('buyer_add_cart')
+    data = json.dumps(
+        {"token": "111",
+         "product_id": 1,
+         "quantity": 2
+         }
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
