@@ -22,6 +22,7 @@ def authentication_decorator(func):
         else:
             raise ValueError('the token is invalid, need to log in')
         return func(email, request)
+
     return wrapper
 
 

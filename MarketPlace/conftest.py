@@ -176,7 +176,7 @@ def fixture_token_main(fixture_email):
 
 
 @pytest.fixture()
-def fixture_shopping_cart(fixture_email, fixture_profile_buyer, fixture_product, fixture_catalog_product,
+def fixture_shopping_cart(fixture_profile_buyer, fixture_product, fixture_catalog_product,
                           fixture_token_main):
     shopping_cart = [
         {
