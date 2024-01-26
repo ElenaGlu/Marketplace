@@ -3,6 +3,7 @@ import json
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import ProfileBuyer
+from seller.models import Catalog
 from utils.access import Access
 from buyer.buyer_services.shop import Shop, authentication_decorator
 
@@ -59,6 +60,16 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
         return obj_auth.login(user_data, ProfileBuyer)
 
 
+def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:
+    """
+    Provides a list id of existing catalogs.
+    :return: id catalogs
+    """
+    if request.method == "GET":
+        catalogs = list(Catalog.objects.all().values())
+        return JsonResponse(catalogs, status=200, safe=False)
+
+
 def buyer_selects_products_by_category(request: HttpRequest) -> JsonResponse:
     """
     Selection of products included in a specific catalog.
@@ -87,8 +98,8 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
 def buyer_add_cart(email, request) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
-    :param request:
-    :param email:
+    :param request: JSON object containing string with token, id product, quantity
+    :param email: email object
     :return: "created" (201) response code
     """
     data = json.loads(request.body)

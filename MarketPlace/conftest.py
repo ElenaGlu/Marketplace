@@ -13,11 +13,13 @@ def fixture_email():
         "seller_1@mail.ru",
         "seller_2@mail.ru",
         "elena.g.2023@list.ru",
-        "buyer_2@mail.ru"]
-    tmp_list = []
-    for item in email:
-        tmp_list.append(b_models.Email(email=item))
-    return b_models.Email.objects.bulk_create(tmp_list)
+        "buyer_2@mail.ru",
+        "buyer_1@mail.ru"
+    ]
+    temporary = []
+    for obj in email:
+        temporary.append(b_models.Email(email=obj))
+    return b_models.Email.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
@@ -31,7 +33,7 @@ def fixture_profile_seller(fixture_email):
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
             "password": password_hash,
-            "email_id": fixture_email[2].id,  # ("seller_1@mail.ru")   "elena.g.2023@list.ru"
+            "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
             "active_account": False
         },
         {
@@ -40,76 +42,69 @@ def fixture_profile_seller(fixture_email):
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
             "password": password_hash,
-            "email_id": fixture_email[1].id,   # "seller_2@mail.ru"
+            "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
             "active_account": True
         }
     ]
-    tmp_list = []
-    for item in profile_seller:
-        tmp_list.append(s_models.ProfileSeller(
-            store_name=item['store_name'],
-            Individual_Taxpayer_Number=item['Individual_Taxpayer_Number'],
-            type_of_organization=item['type_of_organization'],
-            country_of_registration=item['country_of_registration'],
-            password=item['password'],
-            email_id=item['email_id'],
-            active_account=item['active_account']
-        )
-        )
-    return s_models.ProfileSeller.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in profile_seller:
+        temporary.append(s_models.ProfileSeller(**obj))
+    return s_models.ProfileSeller.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
 def fixture_catalog():
     catalog = ["home", "furniture"]
-    tmp_list = []
-    for item in catalog:
-        tmp_list.append(s_models.Catalog(title_catalog=item))
-    return s_models.Catalog.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in catalog:
+        temporary.append(s_models.Catalog(title_catalog=obj))
+    return s_models.Catalog.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
 def fixture_product(fixture_catalog, fixture_profile_seller):
     product = [
         {
-            "store_name": fixture_profile_seller[0].id,  # "seller_1"
+            "store_name_id": fixture_profile_seller[0].id,  # "seller_1"
             "title_product": "computer table",
             "description": "size:1500",
             "quantity": 10,
             "price": 1999,
         },
         {
-            "store_name": fixture_profile_seller[1].id,    # "seller_2"
+            "store_name_id": fixture_profile_seller[1].id,  # "seller_2"
             "title_product": "flower",
             "description": "ficus",
             "quantity": 5,
             "price": 799,
         }
     ]
-    tmp_list = []
-    for item in product:
-        tmp_list.append(s_models.Product(
-            store_name_id=item['store_name'],
-            title_product=item['title_product'],
-            description=item['description'],
-            quantity=item['quantity'],
-            price=item['price']
-        )
-        )
-    return s_models.Product.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in product:
+        temporary.append(s_models.Product(**obj))
+    return s_models.Product.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
 def fixture_catalog_product(fixture_product, fixture_catalog):
-    catalog_product = [{"product": fixture_product[0].id, "catalog": fixture_catalog[0].id},
-                       {"product": fixture_product[0].id, "catalog": fixture_catalog[1].id},
-                       {"product": fixture_product[1].id, "catalog": fixture_catalog[0].id}
-                       ]
-    tmp_list = []
-    for item in catalog_product:
-        tmp_list.append(s_models.CatalogProduct(product_id=item['product'],
-                                                catalog_id=item['catalog']))
-    s_models.CatalogProduct.objects.bulk_create(tmp_list)
+    catalog_product = [
+        {
+         "product_id": fixture_product[0].id,
+         "catalog_id": fixture_catalog[0].id
+        },
+        {
+         "product_id": fixture_product[0].id,
+         "catalog_id": fixture_catalog[1].id
+        },
+        {
+         "product_id": fixture_product[1].id,
+         "catalog_id": fixture_catalog[0].id
+        }
+    ]
+    temporary = []
+    for obj in catalog_product:
+        temporary.append(s_models.CatalogProduct(**obj))
+    s_models.CatalogProduct.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
@@ -121,7 +116,7 @@ def fixture_profile_buyer(fixture_email):
             "name": "elena",
             "surname": "test_user",
             "password": password_hash,
-            "email_id": fixture_email[2].id,    # "elena.g.2023@list.ru"
+            "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
             "active_account": False
         },
         {
@@ -130,18 +125,19 @@ def fixture_profile_buyer(fixture_email):
             "password": password_hash,
             "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"
             "active_account": True
+        },
+        {
+            "name": "buyer_1",
+            "surname": "test",
+            "password": password_hash,
+            "email_id": fixture_email[4].id,  # "buyer_1@mail.ru"
+            "active_account": True
         }
     ]
-    tmp_list = []
-    for item in profile_buyer:
-        tmp_list.append(b_models.ProfileBuyer(
-            name=item['name'],
-            surname=item['surname'],
-            password=item['password'],
-            email_id=item['email_id'],
-            active_account=item['active_account'])
-        )
-    return b_models.ProfileBuyer.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in profile_buyer:
+        temporary.append(b_models.ProfileBuyer(**obj))
+    return b_models.ProfileBuyer.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
@@ -153,13 +149,10 @@ def fixture_token_email(fixture_email):
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]
-    tmp_list = []
-    for item in token:
-        tmp_list.append(b_models.TokenEmail(
-            token=item['token'],
-            email_id=item['email_id'],
-            stop_date=item['stop_date']))
-    return b_models.TokenEmail.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in token:
+        temporary.append(b_models.TokenEmail(**obj))
+    return b_models.TokenEmail.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
@@ -169,30 +162,30 @@ def fixture_token_main(fixture_email):
             "token": "111",
             "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        },
+        {
+            "token": "222",
+            "email_id": fixture_email[4].id,  # "buyer_1@mail.ru"
+            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]
-    tmp_list = []
-    for item in token:
-        tmp_list.append(b_models.TokenMain(
-            token=item['token'],
-            email_id=item['email_id'],
-            stop_date=item['stop_date']))
-    return b_models.TokenMain.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in token:
+        temporary.append(b_models.TokenMain(**obj))
+    return b_models.TokenMain.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
-def fixture_shopping_cart(fixture_catalog_product, fixture_profile_buyer, fixture_email):
+def fixture_shopping_cart(fixture_email, fixture_profile_buyer, fixture_product, fixture_catalog_product,
+                          fixture_token_main):
     shopping_cart = [
         {
-            "product_id": 1,
-            "buyer_id": fixture_email[2].id,   # "elena.g.2023@list.ru"
+            "product_id": fixture_product[0].id,
+            "buyer_id": fixture_profile_buyer[1].id,  # "buyer_2@mail.ru"
             "quantity": 2
         }
     ]
-    tmp_list = []
-    for item in shopping_cart:
-        tmp_list.append(b_models.ShoppingCart(
-            product_id=item['product_id'],
-            buyer_id=item['buyer_id'],
-            quantity=item['quantity']))
-    return b_models.ShoppingCart.objects.bulk_create(tmp_list)
+    temporary = []
+    for obj in shopping_cart:
+        temporary.append(b_models.ShoppingCart(**obj))
+    return b_models.ShoppingCart.objects.bulk_create(temporary)

@@ -45,6 +45,16 @@ def test_login(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
+def test_provide_catalogs(client, fixture_catalog):
+    url = reverse('buyer_provide_catalogs')
+    response = client.get(url).json()
+    assert response == [
+        {'id': 1, 'title_catalog': 'home'},
+        {'id': 2, 'title_catalog': 'furniture'}
+    ]
+
+
+@pytest.mark.django_db
 def test_selects_products_by_category(client, fixture_profile_seller, fixture_catalog_product):
     url = reverse('buyer_selects_products_by_category')
     data = json.dumps({"catalog": 1})
@@ -71,11 +81,10 @@ def test_detail_product(client, fixture_profile_seller, fixture_catalog_product)
 
 
 @pytest.mark.django_db
-def test_add_cart(client, fixture_profile_seller, fixture_catalog_product,
-                  fixture_profile_buyer, fixture_token_main, fixture_shopping_cart):
+def test_add_cart(client, fixture_shopping_cart):
     url = reverse('buyer_add_cart')
     data = json.dumps(
-        {"token": "111",
+        {"token": "222",
          "product_id": 1,
          "quantity": 2
          }
