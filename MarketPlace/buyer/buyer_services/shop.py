@@ -1,29 +1,7 @@
-import datetime
-import json
-
 from django.http import JsonResponse, HttpResponse
 
-from buyer.models import TokenMain, ProfileBuyer, ShoppingCart
+from buyer.models import ProfileBuyer, ShoppingCart
 from seller.models import CatalogProduct, Product
-
-
-def authentication_decorator(func):
-    """
-    Token validation.
-    """
-
-    def wrapper(*args):
-        request = args[0]
-        token = json.loads(request.body)['token']
-        stop_date = TokenMain.objects.filter(token=token).first().stop_date
-        now_date = datetime.datetime.now()
-        if stop_date.timestamp() > now_date.timestamp():
-            email = TokenMain.objects.filter(token=token).first().email
-        else:
-            raise ValueError('the token is invalid, need to log in')
-        return func(email, request)
-
-    return wrapper
 
 
 class Shop:

@@ -2,8 +2,9 @@ import json
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from seller.models import Product, CatalogProduct, ProfileSeller
-from utils.access import Access
+from seller.models import ProfileSeller
+from seller.seller_services.seller_product import SellerProduct
+from utils.access import Access, decorator_authentication
 
 
 def seller_register(request: HttpRequest) -> HttpResponse:
@@ -63,20 +64,16 @@ def seller_login(request: HttpRequest) -> JsonResponse:
         return obj_auth.login(user_data, ProfileSeller)
 
 
-def load_product(request: HttpRequest) -> HttpResponse:
+@decorator_authentication
+def seller_load_product(email, request) -> HttpResponse:
     """
     Uploading product information.
-    :param request: JSON object containing strings: title_catalog, title_product, description, quantity, price
+    :param email:
+    :param request: JSON object containing strings: token, store_name_id, title_catalog,
+                                                    title_product, description,
+                                                    quantity, price, catalog_product
     :return: "created" (201) response code
     """
-    if request.method == "POST":
-        product_data = json.loads(request.body)
-        new_product = Product.objects.create(title_product=product_data['title_product'],
-                                             description=product_data['description'],
-                                             quantity=product_data['quantity'],
-                                             price=product_data['price']
-                                             )
-        for item in product_data['title_catalog']:
-            product_item = CatalogProduct(product=new_product, catalog=item)
-
-        return HttpResponse(status=201)
+    data = json.loads(request.body)
+    obj_product = SellerProduct()
+    return obj_product.load_product(email, data)

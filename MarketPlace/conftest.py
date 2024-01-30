@@ -44,6 +44,15 @@ def fixture_profile_seller(fixture_email):
             "password": password_hash,
             "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
             "active_account": True
+        },
+        {
+            "store_name": "seller_1",
+            "Individual_Taxpayer_Number": "111",
+            "type_of_organization": "ИП",
+            "country_of_registration": "RU",
+            "password": password_hash,
+            "email_id": fixture_email[0].id,  # "seller_1@mail.ru"
+            "active_account": True
         }
     ]
     temporary = []
@@ -166,6 +175,11 @@ def fixture_token_main(fixture_email):
         {
             "token": "222",
             "email_id": fixture_email[4].id,  # "buyer_1@mail.ru"
+            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        },
+        {
+            "token": "333",
+            "email_id": fixture_email[0].id,  # "seller_1@mail.ru"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]

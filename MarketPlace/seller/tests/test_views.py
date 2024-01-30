@@ -8,13 +8,13 @@ from django.urls import reverse
 @pytest.mark.django_db
 def test_register(client, fixture_profile_seller):
     url = reverse('seller_register')
-    data = json.dumps({
-        'email': 'shishalovae@mail.ru',
-        'store_name': 'store',
-        'Individual_Taxpayer_Number': '12345',
-        'type_of_organization': 'ИП',
-        'country_of_registration': 'RU',
-        'password': 'password'}
+    data = json.dumps(
+        {'email': 'shishalovae@mail.ru',
+         'store_name': 'store',
+         'Individual_Taxpayer_Number': '12345',
+         'type_of_organization': 'ИП',
+         'country_of_registration': 'RU',
+         'password': 'password'}
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
@@ -39,8 +39,25 @@ def test_confirm_email(client, fixture_token_email, fixture_profile_seller):
 @pytest.mark.django_db
 def test_login(client, fixture_profile_seller):
     url = reverse('seller_login')
-    data = json.dumps({
-        'email': 'elena.g.2023@list.ru',
-        'password': '1'})
+    data = json.dumps(
+        {'email': 'elena.g.2023@list.ru',
+         'password': '1'}
+    )
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_load_product(client, fixture_profile_seller, fixture_token_main):
+    url = reverse('seller_load_product')
+    data = json.dumps(
+        {'token': '333',
+         'title_product': 'bed',
+         'description': 'double bed',
+         'quantity': 6,
+         'price': 7000,
+         'catalog_product': ['1', '2']
+         }
+    )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200

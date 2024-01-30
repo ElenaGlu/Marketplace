@@ -22,6 +22,7 @@ urlpatterns = [
     path('seller_repeat_notification/', s.seller_repeat_notification, name='seller_repeat_notification'),
     path('seller_confirm_email/', s.seller_confirm_email, name='seller_confirm_email'),
     path('seller_login/', s.seller_login, name='seller_login'),
+    path('seller_load_product/', s.seller_load_product, name='seller_load_product'),
 
     path('admin/', admin.site.urls),
 ]

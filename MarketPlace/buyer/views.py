@@ -4,8 +4,8 @@ from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import ProfileBuyer
 from seller.models import Catalog
-from utils.access import Access
-from buyer.buyer_services.shop import Shop, authentication_decorator
+from utils.access import Access, decorator_authentication
+from buyer.buyer_services.shop import Shop
 
 
 def buyer_register(request: HttpRequest) -> HttpResponse:
@@ -94,7 +94,7 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
         return obj_shop.detail_product(obj)
 
 
-@authentication_decorator
+@decorator_authentication
 def buyer_add_cart(email, request) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.

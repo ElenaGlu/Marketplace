@@ -1,6 +1,7 @@
 import datetime
 
 import hashlib
+import json
 import smtplib
 import jwt
 
@@ -8,6 +9,25 @@ from django.http import HttpResponse, JsonResponse
 
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 from buyer.models import Email, TokenEmail, TokenMain
+
+
+def decorator_authentication(func):
+    """
+    Token validation.
+    """
+
+    def wrapper(*args):
+        request = args[0]
+        token = json.loads(request.body)['token']
+        stop_date = TokenMain.objects.filter(token=token).first().stop_date
+        now_date = datetime.datetime.now()
+        if stop_date.timestamp() > now_date.timestamp():
+            email = TokenMain.objects.filter(token=token).first().email
+        else:
+            raise ValueError('the token is invalid, need to log in')
+        return func(email, request)
+
+    return wrapper
 
 
 class Access:
