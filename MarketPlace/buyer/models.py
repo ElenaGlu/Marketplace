@@ -11,7 +11,7 @@ class ProfileBuyer(models.Model):
     name = models.CharField(max_length=20)
     surname = models.CharField(max_length=20)
     password = models.CharField(max_length=150)
-    email = models.ForeignKey(Email, on_delete=models.CASCADE)
+    email = models.OneToOneField(Email, on_delete=models.CASCADE)
     active_account = models.BooleanField(default=False)
 
 

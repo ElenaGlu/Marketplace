@@ -12,7 +12,7 @@ class ProfileSeller(models.Model):
     type_of_organization = models.CharField(choices=TYPE_ORGANIZATION)
     country_of_registration = CountryField()
     password = models.CharField(max_length=150)
-    email = models.ForeignKey('buyer.Email', on_delete=models.CASCADE)
+    email = models.OneToOneField('buyer.Email', on_delete=models.CASCADE)
     active_account = models.BooleanField(default=False)
 
 
@@ -22,10 +22,10 @@ class Catalog(models.Model):
 
 class Product(models.Model):
     store_name = models.ForeignKey(ProfileSeller, on_delete=models.CASCADE)
-    title_product = models.CharField(max_length=40)
-    description = models.CharField(max_length=40)
+    title_product = models.CharField(max_length=100)
+    description = models.CharField(max_length=1000)
     quantity = models.IntegerField()
-    price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    price = models.DecimalField(max_digits=13, decimal_places=2, default=0)
     catalog_product = models.ManyToManyField(Catalog, through="CatalogProduct")
 
 

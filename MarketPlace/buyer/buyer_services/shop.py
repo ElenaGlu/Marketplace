@@ -41,7 +41,6 @@ class Shop:
         :param email: email object
         :return: "created" (201) response code
         """
-        del data['token']
         data['buyer'] = ProfileBuyer.objects.filter(email=email.id).first()
         available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
         if data['quantity'] <= available_quantity:

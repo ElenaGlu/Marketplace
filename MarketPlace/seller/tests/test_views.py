@@ -48,16 +48,31 @@ def test_login(client, fixture_profile_seller):
 
 
 @pytest.mark.django_db
-def test_load_product(client, fixture_profile_seller, fixture_token_main):
+def test_load_product(client, fixture_token_main, fixture_catalog_product):
     url = reverse('seller_load_product')
     data = json.dumps(
-        {'token': '333',
+        {'token': '333',  # "seller_1@mail.ru"
          'title_product': 'bed',
          'description': 'double bed',
          'quantity': 6,
          'price': 7000,
-         'catalog_product': ['1', '2']
+         'catalog_id': [1, 2],
          }
     )
     response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 200
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_change_product(client, fixture_token_main, fixture_catalog_product):
+    url = reverse('seller_change_product')
+    data = json.dumps(
+        {'token': '333',  # "seller_1@mail.ru"
+         'quantity': 5,
+         'price': 10000,
+         'catalog_id': [1],
+         'product_id': 1
+         }
+    )
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201

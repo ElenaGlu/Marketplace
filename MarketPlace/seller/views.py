@@ -65,15 +65,24 @@ def seller_login(request: HttpRequest) -> JsonResponse:
 
 
 @decorator_authentication
-def seller_load_product(email, request) -> HttpResponse:
+def seller_load_product(email, data) -> HttpResponse:
     """
     Uploading product information.
-    :param email:
-    :param request: JSON object containing strings: token, store_name_id, title_catalog,
-                                                    title_product, description,
-                                                    quantity, price, catalog_product
+    :param email: Email object
+    :param data: dict containing keys with title_product, description, quantity, price, catalog_id
     :return: "created" (201) response code
     """
-    data = json.loads(request.body)
     obj_product = SellerProduct()
     return obj_product.load_product(email, data)
+
+
+@decorator_authentication
+def seller_change_product(email, data) -> HttpResponse:
+    """
+    Change the data of an existing product
+    :param email: Email object
+    :param data: dict containing keys with title_product, description, quantity, price, catalog_id, product_id
+    :return: "created" (201) response code
+    """
+    obj_product = SellerProduct()
+    return obj_product.change_product(data)

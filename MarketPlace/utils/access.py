@@ -18,14 +18,16 @@ def decorator_authentication(func):
 
     def wrapper(*args):
         request = args[0]
-        token = json.loads(request.body)['token']
+        body = json.loads(request.body)
+        token = body['token']
         stop_date = TokenMain.objects.filter(token=token).first().stop_date
         now_date = datetime.datetime.now()
         if stop_date.timestamp() > now_date.timestamp():
             email = TokenMain.objects.filter(token=token).first().email
         else:
             raise ValueError('the token is invalid, need to log in')
-        return func(email, request)
+        del body['token']
+        return func(email, body)
 
     return wrapper
 
@@ -127,6 +129,19 @@ class Access:
                 raise ValueError('invalid username or password')
         else:
             raise ValueError('user does not exist')
+
+    @staticmethod
+    def reset_password(user_data, profile_type) -> JsonResponse:
+        """
+        Password reset.
+        :param user_data: dictionary containing key: email
+        :param profile_type:  object - buyer or seller
+        :return: application access token
+        :raises ValueError: if the user entered an incorrect email
+        """
+        email = Email.objects.filter(email=user_data['email']).first()
+
+
 
     @staticmethod
     def create_token(email) -> dict:
