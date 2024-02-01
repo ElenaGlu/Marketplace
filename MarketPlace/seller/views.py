@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from seller.models import ProfileSeller
+from seller.models import ProfileSeller, TokenSeller
 from seller.seller_services.seller_product import SellerProduct
 from utils.access import Access, decorator_authentication
 
@@ -61,7 +61,7 @@ def seller_login(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.login(user_data, ProfileSeller)
+        return obj_auth.login(user_data, ProfileSeller, TokenSeller)
 
 
 @decorator_authentication

@@ -8,7 +8,8 @@ import jwt
 from django.http import HttpResponse, JsonResponse
 
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
-from buyer.models import Email, TokenEmail, TokenMain
+from buyer.models import Email, TokenEmail, TokenBuyer
+from seller.models import TokenSeller
 
 
 def decorator_authentication(func):
@@ -20,14 +21,18 @@ def decorator_authentication(func):
         request = args[0]
         body = json.loads(request.body)
         token = body['token']
-        stop_date = TokenMain.objects.filter(token=token).first().stop_date
+        if TokenBuyer.objects.filter(token=token).first():
+            token_type = TokenBuyer
+        else:
+            token_type = TokenSeller
+        stop_date = token_type.objects.filter(token=token).first().stop_date
         now_date = datetime.datetime.now()
         if stop_date.timestamp() > now_date.timestamp():
-            email = TokenMain.objects.filter(token=token).first().email
+            profile = token_type.objects.filter(token=token).first().profile
         else:
             raise ValueError('the token is invalid, need to log in')
         del body['token']
-        return func(email, body)
+        return func(profile, body)
 
     return wrapper
 
@@ -110,9 +115,10 @@ class Access:
             raise ValueError('token is invalid')
 
     @staticmethod
-    def login(user_data, profile_type) -> JsonResponse:
+    def login(user_data, profile_type, token_type) -> JsonResponse:
         """
         User authorization in the system.
+        :param token_type: object - TokenBuyer or TokenSeller
         :param profile_type:  object - buyer or seller
         :param user_data: dictionary containing keys: email, password
         :return: application access token
@@ -122,36 +128,34 @@ class Access:
         if email:
             password_hash = Access.create_hash(user_data['password'])
             if profile_type.objects.filter(email=email).first().password == password_hash:
-                token_main = Access.create_token(email)
-                TokenMain.objects.create(**token_main)
-                return JsonResponse(token_main['token'], status=200, safe=False)
+                token_profile = Access.create_token(profile_type.objects.filter(email=email).first())
+                token_type.objects.create(**token_profile)
+                return JsonResponse(token_profile['token'], status=200, safe=False)
             else:
                 raise ValueError('invalid username or password')
         else:
             raise ValueError('user does not exist')
 
-    @staticmethod
-    def reset_password(user_data, profile_type) -> JsonResponse:
-        """
-        Password reset.
-        :param user_data: dictionary containing key: email
-        :param profile_type:  object - buyer or seller
-        :return: application access token
-        :raises ValueError: if the user entered an incorrect email
-        """
-        email = Email.objects.filter(email=user_data['email']).first()
-
-
+    # @staticmethod
+    # def reset_password(user_data, profile_type) -> JsonResponse:
+    #     """
+    #     Password reset.
+    #     :param user_data: dictionary containing key: email
+    #     :param profile_type:  object - buyer or seller
+    #     :return: application access token
+    #     :raises ValueError: if the user entered an incorrect email
+    #     """
+    #     email = Email.objects.filter(email=user_data['email']).first()
 
     @staticmethod
-    def create_token(email) -> dict:
+    def create_token(profile) -> dict:
         """
         JWT token generation
         :return: dict with a token and its expiration date, example {"token": "12345", "stop_date": 2023-12-27 10:37:08.84}
         """
         stop_date = datetime.datetime.now() + datetime.timedelta(hours=24)
         payload = {"sub": "admin", "exp": stop_date}
-        return {'email': email,
+        return {'profile': profile,
                 'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"),
                 'stop_date': stop_date
                 }

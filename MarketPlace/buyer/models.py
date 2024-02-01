@@ -15,13 +15,13 @@ class ProfileBuyer(models.Model):
     active_account = models.BooleanField(default=False)
 
 
-class TokenEmail(models.Model):
-    email = models.ForeignKey(Email, on_delete=models.CASCADE)
+class TokenBuyer(models.Model):
+    profile = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
     token = models.CharField()
     stop_date = models.DateTimeField(default=None)
 
 
-class TokenMain(models.Model):
+class TokenEmail(models.Model):
     email = models.ForeignKey(Email, on_delete=models.CASCADE)
     token = models.CharField()
     stop_date = models.DateTimeField(default=None)

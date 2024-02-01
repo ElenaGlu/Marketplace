@@ -46,12 +46,12 @@ def test_login(client, fixture_profile_buyer):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
-def test_reset_password(client, fixture_profile_buyer):
-    url = reverse('buyer_reset_password')
-    data = json.dumps({'email': 'elena.g.2023@list.ru'})
-    response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 200
+# @pytest.mark.django_db
+# def test_reset_password(client, fixture_profile_buyer):
+#     url = reverse('buyer_reset_password')
+#     data = json.dumps({'email': 'elena.g.2023@list.ru'})
+#     response = client.post(url, data, content_type='application/json')
+#     assert response.status_code == 200
 
 
 @pytest.mark.django_db

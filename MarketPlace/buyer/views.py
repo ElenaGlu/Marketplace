@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.models import ProfileBuyer
+from buyer.models import ProfileBuyer, TokenBuyer
 from seller.models import Catalog
 from utils.access import Access, decorator_authentication
 from buyer.buyer_services.shop import Shop
@@ -57,20 +57,20 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.login(user_data, ProfileBuyer)
+        return obj_auth.login(user_data, ProfileBuyer, TokenBuyer)
 
 
-def buyer_reset_password(request: HttpRequest) -> JsonResponse:
-    """
-    Password reset.
-    :param request: JSON object containing string: email
-    :return: application access token
-    :raises ValueError: if the user entered an incorrect email
-    """
-    if request.method == "POST":
-        user_data = json.loads(request.body)
-        obj_auth = Access()
-        return obj_auth.reset_password(user_data, ProfileBuyer)
+# def buyer_reset_password(request: HttpRequest) -> JsonResponse:
+#     """
+#     Password reset.
+#     :param request: JSON object containing string: email
+#     :return: application access token
+#     :raises ValueError: if the user entered an incorrect email
+#     """
+#     if request.method == "POST":
+#         user_data = json.loads(request.body)
+#         obj_auth = Access()
+#         return obj_auth.reset_password(user_data, ProfileBuyer)
 
 
 def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:
@@ -108,12 +108,12 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
 
 
 @decorator_authentication
-def buyer_add_cart(email, data) -> HttpResponse:
+def buyer_add_cart(profile, data) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
+    :param profile: object ProfileBuyer
     :param data: dict containing keys with token, id product, quantity
-    :param email: email object
     :return: "created" (201) response code
     """
     obj_shop = Shop()
-    return obj_shop.add_cart(email, data)
+    return obj_shop.add_cart(profile, data)
