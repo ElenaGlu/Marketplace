@@ -150,18 +150,33 @@ def fixture_profile_buyer(fixture_email):
 
 
 @pytest.fixture()
-def fixture_token_email(fixture_email):
+def fixture_token_email_buyer(fixture_profile_buyer):
     token = [
         {
             "token": "123",
-            "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
+            "profile": fixture_profile_buyer[0],  # "elena.g.2023@list.ru"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]
     temporary = []
     for obj in token:
-        temporary.append(b_models.TokenEmail(**obj))
-    return b_models.TokenEmail.objects.bulk_create(temporary)
+        temporary.append(b_models.TokenEmailBuyer(**obj))
+    return b_models.TokenEmailBuyer.objects.bulk_create(temporary)
+
+
+@pytest.fixture()
+def fixture_token_email_seller(fixture_profile_seller):
+    token = [
+        {
+            "token": "123",
+            "profile": fixture_profile_seller[0],  # "elena.g.2023@list.ru"
+            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }
+    ]
+    temporary = []
+    for obj in token:
+        temporary.append(s_models.TokenEmailSeller(**obj))
+    return s_models.TokenEmailSeller.objects.bulk_create(temporary)
 
 
 @pytest.fixture()

@@ -8,7 +8,7 @@ import jwt
 from django.http import HttpResponse, JsonResponse
 
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
-from buyer.models import Email, TokenEmail, TokenBuyer
+from buyer.models import Email, TokenBuyer
 from seller.models import TokenSeller
 
 
@@ -43,9 +43,10 @@ class Access:
     """
 
     @staticmethod
-    def register(user_data, profile_type) -> HttpResponse:
+    def register(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Registration of a new user in the system.
+        :param email_token_type:
         :param profile_type: object - buyer or seller
         :param user_data: a dictionary containing keys: email, password..
         :return: "created" (201) response code
@@ -59,21 +60,22 @@ class Access:
         else:
             email = Email.objects.create(email=user_email)
 
-        data_token = Access.create_token(email)
-        TokenEmail.objects.create(**data_token)
-
         user_data['password'] = Access.create_hash(user_data['password'])
         user_data['email'] = email
-        profile_type.objects.create(**user_data)
+        profile_type = profile_type.objects.create(**user_data)
+
+        data_token = Access.create_token(profile_type)
+        email_token_type.objects.create(**data_token)
 
         token = data_token['token']
         Access.send_notification([user_email], f'http://localhost/confirm/?token={token}')
         return HttpResponse(status=201)
 
     @staticmethod
-    def repeat_notification(user_data, profile_type) -> HttpResponse:
+    def repeat_notification(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Resend the email to the specified address.
+        :param email_token_type:
         :param profile_type: object - buyer or seller
         :param user_data: a dictionary containing key: email
         :return: "created" (201) response code
@@ -85,8 +87,9 @@ class Access:
         if email:
             activate = profile_type.objects.filter(email=email).first().active_account
             if not activate:
-                data_token = Access.create_token(email)
-                TokenEmail.objects.filter(email=email).update(**data_token)
+                profile = profile_type.objects.filter(email=email).first()
+                data_token = Access.create_token(profile)
+                email_token_type.objects.filter(profile=profile).update(**data_token)
 
                 token = data_token['token']
                 Access.send_notification([user_email], f'http://localhost/confirm/?token={token}')
@@ -97,19 +100,20 @@ class Access:
         return HttpResponse(status=201)
 
     @staticmethod
-    def confirm_email(token, profile_type) -> HttpResponse:
+    def confirm_email(token, profile_type, email_token_type) -> HttpResponse:
         """
         Confirms the user's profile.
+        :param email_token_type:
         :param profile_type: object - buyer or seller
         :param token: a dictionary containing key: token
         :return: "created" (201) response code
         :raises ValueError: if the token has expired
         """
-        obj = TokenEmail.objects.filter(token=token).first().email
-        stop_date = TokenEmail.objects.filter(token=token).first().stop_date
+        obj = email_token_type.objects.filter(token=token).first().profile_id
+        stop_date = email_token_type.objects.filter(token=token).first().stop_date
         now_date = datetime.datetime.now()
         if obj and stop_date.timestamp() > now_date.timestamp():
-            profile_type.objects.filter(email=obj).update(active_account=True)
+            profile_type.objects.filter(id=obj).update(active_account=True)
             return HttpResponse(status=201)
         else:
             raise ValueError('token is invalid')
@@ -148,14 +152,14 @@ class Access:
     #     email = Email.objects.filter(email=user_data['email']).first()
 
     @staticmethod
-    def create_token(profile) -> dict:
+    def create_token(profile_type) -> dict:
         """
         JWT token generation
         :return: dict with a token and its expiration date, example {"token": "12345", "stop_date": 2023-12-27 10:37:08.84}
         """
         stop_date = datetime.datetime.now() + datetime.timedelta(hours=24)
         payload = {"sub": "admin", "exp": stop_date}
-        return {'profile': profile,
+        return {'profile': profile_type,
                 'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"),
                 'stop_date': stop_date
                 }

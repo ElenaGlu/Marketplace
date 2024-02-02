@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from seller.models import ProfileSeller, TokenSeller
+from seller.models import ProfileSeller, TokenSeller, TokenEmailSeller
 from seller.seller_services.seller_product import SellerProduct
 from utils.access import Access, decorator_authentication
 
@@ -22,7 +22,7 @@ def seller_register(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.register(user_data, ProfileSeller)
+        return obj_auth.register(user_data, ProfileSeller, TokenEmailSeller)
 
 
 def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -36,7 +36,7 @@ def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.repeat_notification(user_data, ProfileSeller)
+        return obj_auth.repeat_notification(user_data, ProfileSeller, TokenEmailSeller)
 
 
 def seller_confirm_email(request) -> HttpResponse:
@@ -48,7 +48,7 @@ def seller_confirm_email(request) -> HttpResponse:
     """
     token = request.GET.get('token')
     obj_auth = Access()
-    return obj_auth.confirm_email(token, ProfileSeller)
+    return obj_auth.confirm_email(token, ProfileSeller, TokenEmailSeller)
 
 
 def seller_login(request: HttpRequest) -> JsonResponse:
@@ -65,15 +65,15 @@ def seller_login(request: HttpRequest) -> JsonResponse:
 
 
 @decorator_authentication
-def seller_load_product(email, data) -> HttpResponse:
+def seller_load_product(profile, data) -> HttpResponse:
     """
     Uploading product information.
-    :param email: Email object
+    :param profile: ProfileSeller object
     :param data: dict containing keys with title_product, description, quantity, price, catalog_id
     :return: "created" (201) response code
     """
     obj_product = SellerProduct()
-    return obj_product.load_product(email, data)
+    return obj_product.load_product(profile, data)
 
 
 @decorator_authentication

@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
-from buyer.models import ProfileBuyer, TokenBuyer
+from buyer.models import ProfileBuyer, TokenBuyer, TokenEmailBuyer
 from seller.models import Catalog
 from utils.access import Access, decorator_authentication
 from buyer.buyer_services.shop import Shop
@@ -18,7 +18,7 @@ def buyer_register(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.register(user_data, ProfileBuyer)
+        return obj_auth.register(user_data, ProfileBuyer, TokenEmailBuyer)
 
 
 def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -32,7 +32,7 @@ def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         user_data = json.loads(request.body)
         obj_auth = Access()
-        return obj_auth.repeat_notification(user_data, ProfileBuyer)
+        return obj_auth.repeat_notification(user_data, ProfileBuyer, TokenEmailBuyer)
 
 
 def buyer_confirm_email(request) -> HttpResponse:
@@ -44,7 +44,7 @@ def buyer_confirm_email(request) -> HttpResponse:
     """
     token = request.GET.get('token')
     obj_auth = Access()
-    return obj_auth.confirm_email(token, ProfileBuyer)
+    return obj_auth.confirm_email(token, ProfileBuyer, TokenEmailBuyer)
 
 
 def buyer_login(request: HttpRequest) -> JsonResponse:

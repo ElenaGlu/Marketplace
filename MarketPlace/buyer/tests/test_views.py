@@ -21,7 +21,7 @@ def test_register(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
-def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email):
+def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email_buyer):
     url = reverse('buyer_repeat_notification')
     data = json.dumps({'email': 'elena.g.2023@list.ru'})
     response = client.post(url, data, content_type='application/json')
@@ -29,7 +29,7 @@ def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email)
 
 
 @pytest.mark.django_db
-def test_confirm_email(client, fixture_profile_buyer, fixture_token_email):
+def test_confirm_email(client, fixture_profile_buyer, fixture_token_email_buyer):
     url = reverse('buyer_confirm_email')
     data = {"token": "123"}
     response = client.get(url, data)

@@ -5,14 +5,14 @@ from seller.models import ProfileSeller, Product, CatalogProduct, Catalog
 
 class SellerProduct:
     @staticmethod
-    def load_product(email, data) -> HttpResponse:
+    def load_product(profile, data) -> HttpResponse:
         """
         Uploading product information.
-        :param email: Email object
+        :param profile: ProfileSeller object
         :param data: dict containing keys with title_product, description, quantity, price, catalog_id
         :return: "created" (201) response code
         """
-        data['store_name_id'] = ProfileSeller.objects.filter(email=email).first().id
+        data['store_name_id'] = profile.id
         catalogs = data.pop('catalog_id')
         new_product = Product.objects.create(**data)
         bulk_list = list()

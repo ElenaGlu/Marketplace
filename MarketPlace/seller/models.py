@@ -22,6 +22,12 @@ class TokenSeller(models.Model):
     stop_date = models.DateTimeField(default=None)
 
 
+class TokenEmailSeller(models.Model):
+    profile = models.ForeignKey(ProfileSeller, on_delete=models.CASCADE)
+    token = models.CharField()
+    stop_date = models.DateTimeField(default=None)
+
+
 class Catalog(models.Model):
     title_catalog = models.CharField(max_length=40)
 
