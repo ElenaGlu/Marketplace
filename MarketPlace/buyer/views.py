@@ -60,17 +60,30 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
         return obj_auth.login(user_data, ProfileBuyer, TokenBuyer)
 
 
-# def buyer_reset_password(request: HttpRequest) -> JsonResponse:
-#     """
-#     Password reset.
-#     :param request: JSON object containing string: email
-#     :return: application access token
-#     :raises ValueError: if the user entered an incorrect email
-#     """
-#     if request.method == "POST":
-#         user_data = json.loads(request.body)
-#         obj_auth = Access()
-#         return obj_auth.reset_password(user_data, ProfileBuyer)
+def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
+    """
+    Password reset.
+    :param request: JSON object containing string: email
+    :return:
+    :raises ValueError: if the user entered an incorrect email
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = Access()
+        return obj_auth.redirect_reset(user_data, ProfileBuyer)
+
+
+def buyer_reset_password(request: HttpRequest) -> HttpResponse:
+    """
+    Password reset.
+    :param request: JSON object containing string: email, new password
+    :return:
+    :raises ValueError: if the user entered an incorrect email
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = Access()
+        return obj_auth.reset_password(user_data, ProfileBuyer, TokenBuyer)
 
 
 def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:

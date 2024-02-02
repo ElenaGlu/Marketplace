@@ -40,7 +40,7 @@ def test_confirm_email(client, fixture_profile_seller, fixture_token_email_selle
 def test_login(client, fixture_profile_seller):
     url = reverse('seller_login')
     data = json.dumps(
-        {'email': 'elena.g.2023@list.ru',
+        {'email': 'seller_2@mail.ru',
          'password': '1'}
     )
     response = client.post(url, data, content_type='application/json')

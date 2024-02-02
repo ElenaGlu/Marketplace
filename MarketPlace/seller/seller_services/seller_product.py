@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 
-from seller.models import ProfileSeller, Product, CatalogProduct, Catalog
+from seller.models import Product, CatalogProduct, Catalog
 
 
 class SellerProduct:

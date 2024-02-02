@@ -39,19 +39,32 @@ def test_confirm_email(client, fixture_profile_buyer, fixture_token_email_buyer)
 @pytest.mark.django_db
 def test_login(client, fixture_profile_buyer):
     url = reverse('buyer_login')
-    data = json.dumps({
-        'email': 'elena.g.2023@list.ru',
-        'password': '1'})
+    data = json.dumps(
+        {'email': 'buyer_2@mail.ru',
+         'password': '1'}
+    )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200
 
 
-# @pytest.mark.django_db
-# def test_reset_password(client, fixture_profile_buyer):
-#     url = reverse('buyer_reset_password')
-#     data = json.dumps({'email': 'elena.g.2023@list.ru'})
-#     response = client.post(url, data, content_type='application/json')
-#     assert response.status_code == 200
+@pytest.mark.django_db
+def test_redirect_reset(client, fixture_profile_buyer):
+    url = reverse('buyer_redirect_reset')
+    data = json.dumps({'email': 'elena.g.2023@list.ru'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_reset_password(client, fixture_profile_buyer):
+    url = reverse('buyer_reset_password')
+    data = json.dumps(
+        {'email': 'elena.g.2023@list.ru',
+         'password': '2'
+         }
+    )
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
 
 
 @pytest.mark.django_db

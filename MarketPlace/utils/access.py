@@ -46,8 +46,8 @@ class Access:
     def register(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Registration of a new user in the system.
-        :param email_token_type:
-        :param profile_type: object - buyer or seller
+        :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
+        :param profile_type: object - ProfileBuyer or  ProfileSeller
         :param user_data: a dictionary containing keys: email, password..
         :return: "created" (201) response code
         :raises ValueError: if the user is registered in the system
@@ -58,13 +58,10 @@ class Access:
             if profile_type.objects.filter(email=email).first():
                 raise ValueError('the user is already registered')
         else:
-            email = Email.objects.create(email=user_email)
+            user_data['email'] = Email.objects.create(email=user_email)
 
         user_data['password'] = Access.create_hash(user_data['password'])
-        user_data['email'] = email
-        profile_type = profile_type.objects.create(**user_data)
-
-        data_token = Access.create_token(profile_type)
+        data_token = Access.create_token(profile_type.objects.create(**user_data))
         email_token_type.objects.create(**data_token)
 
         token = data_token['token']
@@ -75,8 +72,8 @@ class Access:
     def repeat_notification(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Resend the email to the specified address.
-        :param email_token_type:
-        :param profile_type: object - buyer or seller
+        :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
+        :param profile_type: object - ProfileBuyer or  ProfileSeller
         :param user_data: a dictionary containing key: email
         :return: "created" (201) response code
         :raises ValueError: if the user is not registered in the system
@@ -103,8 +100,8 @@ class Access:
     def confirm_email(token, profile_type, email_token_type) -> HttpResponse:
         """
         Confirms the user's profile.
-        :param email_token_type:
-        :param profile_type: object - buyer or seller
+        :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
+        :param profile_type: object - ProfileBuyer or  ProfileSeller
         :param token: a dictionary containing key: token
         :return: "created" (201) response code
         :raises ValueError: if the token has expired
@@ -114,6 +111,7 @@ class Access:
         now_date = datetime.datetime.now()
         if obj and stop_date.timestamp() > now_date.timestamp():
             profile_type.objects.filter(id=obj).update(active_account=True)
+            email_token_type.objects.filter(token=token).first().delete()
             return HttpResponse(status=201)
         else:
             raise ValueError('token is invalid')
@@ -123,33 +121,60 @@ class Access:
         """
         User authorization in the system.
         :param token_type: object - TokenBuyer or TokenSeller
-        :param profile_type:  object - buyer or seller
+        :param profile_type: object - ProfileBuyer or  ProfileSeller
         :param user_data: dictionary containing keys: email, password
         :return: application access token
         :raises ValueError: if the user entered an incorrect email or password
         """
         email = Email.objects.filter(email=user_data['email']).first()
-        if email:
+        user = profile_type.objects.filter(email=email).first()
+        if user.active_account:
             password_hash = Access.create_hash(user_data['password'])
-            if profile_type.objects.filter(email=email).first().password == password_hash:
-                token_profile = Access.create_token(profile_type.objects.filter(email=email).first())
-                token_type.objects.create(**token_profile)
-                return JsonResponse(token_profile['token'], status=200, safe=False)
+            if user.password == password_hash:
+                data_token = Access.create_token(user)
+                token_type.objects.create(**data_token)
+                return JsonResponse(data_token['token'], status=200, safe=False)
             else:
                 raise ValueError('invalid username or password')
         else:
             raise ValueError('user does not exist')
 
-    # @staticmethod
-    # def reset_password(user_data, profile_type) -> JsonResponse:
-    #     """
-    #     Password reset.
-    #     :param user_data: dictionary containing key: email
-    #     :param profile_type:  object - buyer or seller
-    #     :return: application access token
-    #     :raises ValueError: if the user entered an incorrect email
-    #     """
-    #     email = Email.objects.filter(email=user_data['email']).first()
+    @staticmethod
+    def redirect_reset(user_data, profile_type) -> HttpResponse:
+        """
+
+        :param user_data: dictionary containing key with email
+        :param profile_type:  object - ProfileBuyer or  ProfileSeller
+        :return:
+        :raises ValueError: if the user entered an incorrect email
+        """
+        user_email = user_data['email']
+        email = Email.objects.filter(email=user_email).first()
+        if email:
+            profile = profile_type.objects.filter(email=email).first()
+            if profile:
+                Access.send_notification([user_email], f'ссылка на форму')
+            else:
+                raise ValueError('user does not exist')
+        else:
+            raise ValueError('user does not exist')
+
+        return HttpResponse(status=201)
+
+    @staticmethod
+    def reset_password(user_data, profile_type, token_type) -> HttpResponse:
+        """
+        :param token_type: object - TokenBuyer or TokenSeller
+        :param user_data: dictionary containing keys with email, password
+        :param profile_type:  object - ProfileBuyer or  ProfileSeller
+        :return:
+        """
+        email = Email.objects.filter(email=user_data['email']).first()
+        profile = profile_type.objects.filter(email=email).first()
+        token_type.objects.filter(profile=profile).delete()
+        hash_password = Access.create_hash(user_data['password'])
+        profile_type.objects.filter(email=email).update(password=hash_password)
+        return HttpResponse(status=201)
 
     @staticmethod
     def create_token(profile_type) -> dict:
