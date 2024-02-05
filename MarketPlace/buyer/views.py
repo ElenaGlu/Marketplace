@@ -76,7 +76,7 @@ def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
 def buyer_reset_password(request: HttpRequest) -> HttpResponse:
     """
     Password reset.
-    :param request: JSON object containing string: email, new password
+    :param request: JSON object containing strings email, new password
     :return:
     :raises ValueError: if the user entered an incorrect email
     """
@@ -84,6 +84,32 @@ def buyer_reset_password(request: HttpRequest) -> HttpResponse:
         user_data = json.loads(request.body)
         obj_auth = Access()
         return obj_auth.reset_password(user_data, ProfileBuyer, TokenBuyer)
+
+
+def buyer_logout(request: HttpRequest) -> HttpResponse:
+    """
+    Logout.
+    :param request: JSON object containing string token
+    :return:
+    :raises ValueError:
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = Access()
+        return obj_auth.logout(user_data, TokenBuyer)
+
+
+@decorator_authentication
+def buyer_update_profile(profile, data) -> HttpResponse:
+    """
+    Update profile
+    :param profile: object ProfileBuyer
+    :param data: dict containing keys with
+    :return:
+    :raises ValueError:
+    """
+    obj_auth = Access()
+    return obj_auth.update_profile(profile, data, ProfileBuyer, TokenBuyer)
 
 
 def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:

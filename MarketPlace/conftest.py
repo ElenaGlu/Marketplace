@@ -13,7 +13,7 @@ def fixture_email():
         "seller_1@mail.ru",
         "seller_2@mail.ru",
         "elena.g.2023@list.ru",
-        "buyer_2@mail.ru",
+        "shishalova310@gmail.com",
         "buyer_1@mail.ru"
     ]
     temporary = []

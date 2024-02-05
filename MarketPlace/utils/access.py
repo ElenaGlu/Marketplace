@@ -177,6 +177,42 @@ class Access:
         return HttpResponse(status=201)
 
     @staticmethod
+    def logout(user_data, token_type) -> HttpResponse:
+        """
+        :param token_type: object - TokenBuyer or TokenSeller
+        :param user_data: dictionary containing key with token
+        :return:
+        """
+        token_type.objects.filter(token=user_data['token']).delete()
+        return HttpResponse(status=201)
+
+    @staticmethod
+    def update_profile(profile, data, profile_type, token_type) -> HttpResponse:
+        """
+        :param token_type:
+        :param profile_type:
+        :param profile: object ProfileBuyer
+        :param data: dictionary containing keys with
+        :return:
+        """
+        if 'password' not in data:
+            profile_type.objects.filter(id=profile.id).update(**data)
+        else:
+            data['password'] = Access.create_hash(data['password'])
+            new_token = Access.create_token(profile)
+            token_type.objects.filter(id=profile.id).delete()
+            token_type.objects.update(**new_token)
+
+            obj = profile_type.objects.filter(id=profile.id).update(**data, active_account=False)
+            email = list(Email.objects.filter(id=obj).values('email'))[0]['email']
+
+            Access.send_notification([email], f'xxx')
+
+            return JsonResponse(new_token['token'], status=201, safe=False)
+
+        return HttpResponse(status=201)
+
+    @staticmethod
     def create_token(profile_type) -> dict:
         """
         JWT token generation

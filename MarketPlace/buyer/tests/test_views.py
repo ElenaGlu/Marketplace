@@ -4,6 +4,8 @@ import pytest
 
 from django.urls import reverse
 
+from buyer.models import ProfileBuyer
+
 
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
@@ -62,6 +64,28 @@ def test_reset_password(client, fixture_profile_buyer):
         {'email': 'elena.g.2023@list.ru',
          'password': '2'
          }
+    )
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_logout(client, fixture_token_buyer):
+    url = reverse('buyer_logout')
+    data = json.dumps({'token': '111'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_update_profile(client, fixture_token_buyer):
+    url = reverse('buyer_update_profile')
+    data = json.dumps({
+        'token': '111',
+        'name': 'buyer',
+        'surname': 'new',
+        'password': 'pwd'
+    }
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201

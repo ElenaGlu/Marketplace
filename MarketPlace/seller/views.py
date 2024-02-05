@@ -64,6 +64,45 @@ def seller_login(request: HttpRequest) -> JsonResponse:
         return obj_auth.login(user_data, ProfileSeller, TokenSeller)
 
 
+def seller_redirect_reset(request: HttpRequest) -> HttpResponse:
+    """
+    Password reset.
+    :param request: JSON object containing string: email
+    :return:
+    :raises ValueError: if the user entered an incorrect email
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = Access()
+        return obj_auth.redirect_reset(user_data, ProfileSeller)
+
+
+def seller_reset_password(request: HttpRequest) -> HttpResponse:
+    """
+    Password reset.
+    :param request: JSON object containing string: email, new password
+    :return:
+    :raises ValueError: if the user entered an incorrect email
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = Access()
+        return obj_auth.reset_password(user_data, ProfileSeller, TokenSeller)
+
+
+def seller_logout(request: HttpRequest) -> HttpResponse:
+    """
+    Logout.
+    :param request: JSON object containing string: token
+    :return:
+    :raises ValueError:
+    """
+    if request.method == "POST":
+        user_data = json.loads(request.body)
+        obj_auth = Access()
+        return obj_auth.logout(user_data, TokenSeller)
+
+
 @decorator_authentication
 def seller_load_product(profile, data) -> HttpResponse:
     """

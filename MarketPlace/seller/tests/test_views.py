@@ -48,6 +48,34 @@ def test_login(client, fixture_profile_seller):
 
 
 @pytest.mark.django_db
+def test_redirect_reset(client, fixture_profile_seller):
+    url = reverse('seller_redirect_reset')
+    data = json.dumps({'email': 'elena.g.2023@list.ru'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_reset_password(client, fixture_profile_seller):
+    url = reverse('seller_reset_password')
+    data = json.dumps(
+        {'email': 'elena.g.2023@list.ru',
+         'password': '2'
+         }
+    )
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_logout(client, fixture_token_seller):
+    url = reverse('seller_logout')
+    data = json.dumps({'token': '333'})
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
 def test_load_product(client, fixture_token_seller, fixture_catalog_product):
     url = reverse('seller_load_product')
     data = json.dumps(
