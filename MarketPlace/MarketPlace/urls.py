@@ -19,6 +19,7 @@ urlpatterns = [
     path('buyer_catalog/', b.buyer_selects_products_by_category, name='buyer_selects_products_by_category'),
     path('buyer_product/', b.buyer_detail_product, name='buyer_detail_product'),
     path('buyer_add_cart/', b.buyer_add_cart, name='buyer_add_cart'),
+    path('buyer_remove_cart/', b.buyer_remove_cart, name='buyer_remove_cart'),
 
 
 

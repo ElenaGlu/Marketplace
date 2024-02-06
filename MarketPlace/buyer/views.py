@@ -156,3 +156,15 @@ def buyer_add_cart(profile, data) -> HttpResponse:
     """
     obj_shop = Shop()
     return obj_shop.add_cart(profile, data)
+
+
+@decorator_authentication
+def buyer_remove_cart(profile, data) -> HttpResponse:
+    """
+    Remove items from the shopping cart.
+    :param profile: object ProfileBuyer
+    :param data: dict containing keys
+    :return: "created" (201) response code
+    """
+    obj_shop = Shop()
+    return obj_shop.remove_cart(profile, data)

@@ -48,3 +48,19 @@ class Shop:
         else:
             raise ValueError(f'the available quantity of the product:{available_quantity}')
         return HttpResponse(status=201)
+
+    @staticmethod
+    def remove_cart(profile, data) -> HttpResponse:
+        """
+        Remove items from the shopping cart.
+        :param profile: object ProfileBuyer
+        :param data: dictionary containing keys with token, id product, quantity
+        :return: "created" (201) response code
+        """
+        data['buyer'] = ProfileBuyer.objects.filter(id=profile.id).first()
+        available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
+        if data['quantity'] <= available_quantity:
+            ShoppingCart.objects.create(**data)
+        else:
+            raise ValueError(f'the available quantity of the product:{available_quantity}')
+        return HttpResponse(status=201)

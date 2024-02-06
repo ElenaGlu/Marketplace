@@ -132,7 +132,7 @@ def fixture_profile_buyer(fixture_email):
             "name": "buyer_2",
             "surname": "test",
             "password": password_hash,
-            "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"
+            "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"  "shishalova310@gmail.com"
             "active_account": True
         },
         {
