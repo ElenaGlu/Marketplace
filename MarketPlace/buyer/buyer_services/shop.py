@@ -60,7 +60,10 @@ class Shop:
         data['buyer'] = ProfileBuyer.objects.filter(id=profile.id).first()
         available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
         if data['quantity'] <= available_quantity:
-            ShoppingCart.objects.create(**data)
+            if data['quantity'] == 0:
+                ShoppingCart.objects.filter(buyer=data['buyer'], product_id=data["product_id"]).delete()
+            else:
+                ShoppingCart.objects.update_or_create(**data)
         else:
             raise ValueError(f'the available quantity of the product:{available_quantity}')
         return HttpResponse(status=201)

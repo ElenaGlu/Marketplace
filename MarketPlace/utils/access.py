@@ -14,13 +14,13 @@ from seller.models import TokenSeller
 
 def decorator_authentication(func):
     """
-    Token validation.
+    Verification of the user's primary authorization token.
     """
 
     def wrapper(*args):
         request = args[0]
-        body = json.loads(request.body)
-        token = body['token']
+        user_data = json.loads(request.body)
+        token = user_data['token']
         if TokenBuyer.objects.filter(token=token).first():
             token_type = TokenBuyer
         else:
@@ -31,8 +31,8 @@ def decorator_authentication(func):
             profile = token_type.objects.filter(token=token).first().profile
         else:
             raise ValueError('the token is invalid, need to log in')
-        del body['token']
-        return func(profile, body)
+        del user_data['token']
+        return func(profile, user_data)
 
     return wrapper
 
@@ -46,9 +46,9 @@ class Access:
     def register(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Registration of a new user in the system.
+        :param user_data: dict containing keys with email, password (name, surname,)
+        :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
-        :param profile_type: object - ProfileBuyer or  ProfileSeller
-        :param user_data: a dictionary containing keys: email, password..
         :return: "created" (201) response code
         :raises ValueError: if the user is registered in the system
         """
@@ -72,9 +72,9 @@ class Access:
     def repeat_notification(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Resend the email to the specified address.
+        :param user_data: dict containing key with email
+        :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
-        :param profile_type: object - ProfileBuyer or  ProfileSeller
-        :param user_data: a dictionary containing key: email
         :return: "created" (201) response code
         :raises ValueError: if the user is not registered in the system
         :raises ValueError: if the user has already confirmed their profile
@@ -100,9 +100,9 @@ class Access:
     def confirm_email(token, profile_type, email_token_type) -> HttpResponse:
         """
         Confirms the user's profile.
+        :param token: string with token
+        :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
-        :param profile_type: object - ProfileBuyer or  ProfileSeller
-        :param token: a dictionary containing key: token
         :return: "created" (201) response code
         :raises ValueError: if the token has expired
         """
@@ -120,9 +120,9 @@ class Access:
     def login(user_data, profile_type, token_type) -> JsonResponse:
         """
         User authorization in the system.
+        :param user_data: dict containing keys with email, password
+        :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
-        :param profile_type: object - ProfileBuyer or  ProfileSeller
-        :param user_data: dictionary containing keys: email, password
         :return: application access token
         :raises ValueError: if the user entered an incorrect email or password
         """
@@ -142,10 +142,10 @@ class Access:
     @staticmethod
     def redirect_reset(user_data, profile_type) -> HttpResponse:
         """
-
-        :param user_data: dictionary containing key with email
-        :param profile_type:  object - ProfileBuyer or  ProfileSeller
-        :return:
+        Sends a link to the email to reset the password
+        :param user_data: dict containing key with email
+        :param profile_type:  object - ProfileBuyer or ProfileSeller
+        :return: "created" (201) response code
         :raises ValueError: if the user entered an incorrect email
         """
         user_email = user_data['email']
@@ -158,16 +158,16 @@ class Access:
                 raise ValueError('user does not exist')
         else:
             raise ValueError('user does not exist')
-
         return HttpResponse(status=201)
 
     @staticmethod
     def reset_password(user_data, profile_type, token_type) -> HttpResponse:
         """
+        Changing the password to a new one
+        :param user_data: dict containing keys with email, password
+        :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
-        :param user_data: dictionary containing keys with email, password
-        :param profile_type:  object - ProfileBuyer or  ProfileSeller
-        :return:
+        :return: "created" (201) response code
         """
         email = Email.objects.filter(email=user_data['email']).first()
         profile = profile_type.objects.filter(email=email).first()
@@ -179,48 +179,51 @@ class Access:
     @staticmethod
     def logout(user_data, token_type) -> HttpResponse:
         """
+        Authorized user logs out of the system.
+        :param user_data: dict containing key with token
         :param token_type: object - TokenBuyer or TokenSeller
-        :param user_data: dictionary containing key with token
-        :return:
+        :return: "OK" (200) response code
         """
         token_type.objects.filter(token=user_data['token']).delete()
-        return HttpResponse(status=201)
+        return HttpResponse(status=200)
 
     @staticmethod
-    def update_profile(profile, data, profile_type, token_type) -> HttpResponse:
+    def update_profile(profile, user_data, profile_type, token_type) -> HttpResponse:
         """
-        :param token_type:
-        :param profile_type:
+        Authorized user changes his profile data.
         :param profile: object ProfileBuyer
-        :param data: dictionary containing keys with
-        :return:
+        :param user_data: dict containing keys with name, surname, password
+        :param profile_type: object - ProfileBuyer or ProfileSeller
+        :param token_type: object - TokenBuyer or TokenSeller
+        :return: "created" (201) response code
         """
-        if 'password' not in data:
-            profile_type.objects.filter(id=profile.id).update(**data)
+        if 'password' not in user_data:
+            profile_type.objects.filter(id=profile.id).update(**user_data)
         else:
-            data['password'] = Access.create_hash(data['password'])
+            user_data['password'] = Access.create_hash(user_data['password'])
             new_token = Access.create_token(profile)
             token_type.objects.filter(profile=profile.id).delete()
             token_type.objects.update(**new_token)
 
-            profile_type.objects.filter(id=profile.id).update(**data, active_account=False)
+            profile_type.objects.filter(id=profile.id).update(**user_data, active_account=False)
             email = list(profile_type.objects.filter(id=profile.id).values('email'))[0]['email']
             email = list(Email.objects.filter(id=email).values('email'))[0]['email']
 
             Access.send_notification([email], f'xxx')
-
             return JsonResponse(new_token['token'], status=201, safe=False)
-
         return HttpResponse(status=201)
 
     @staticmethod
     def create_token(profile_type) -> dict:
         """
         JWT token generation
-        :return: dict with a token and its expiration date, example {"token": "12345", "stop_date": 2023-12-27 10:37:08.84}
+        :return: dict with a token and its expiration date
+        :return: example {"token": "12345", "stop_date": 2023-12-27 10:37:08.84}
         """
         stop_date = datetime.datetime.now() + datetime.timedelta(hours=24)
-        payload = {"sub": "admin", "exp": stop_date}
+        payload = {"sub": "admin",
+                   "exp": stop_date
+                   }
         return {'profile': profile_type,
                 'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"),
                 'stop_date': stop_date

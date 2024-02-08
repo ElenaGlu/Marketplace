@@ -5,27 +5,29 @@ import pytest
 from django.urls import reverse
 
 from buyer.models import ProfileBuyer
+from config import EMAIL_3, EMAIL_1, EMAIL_2
 
 
 @pytest.mark.django_db
 def test_register(client, fixture_profile_buyer):
     url = reverse('buyer_register')
-    data = json.dumps({
-        'email': 'shishalovae@mail.ru',
-        'name': 'user',
-        'surname': 'test_user',
-        'password': 'password'}
+    data = json.dumps(
+        {'email': EMAIL_3,
+         'name': 'user',
+         'surname': 'test_user',
+         'password': 'password'
+         }
     )
     response = client.post(url, data, content_type='application/json')
-    # a = ProfileBuyer.objects.filter(email=6).values()
-    # print(a)
     assert response.status_code == 201
 
 
 @pytest.mark.django_db
 def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email_buyer):
     url = reverse('buyer_repeat_notification')
-    data = json.dumps({'email': 'elena.g.2023@list.ru'})
+    data = json.dumps(
+        {'email': EMAIL_1}
+    )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
 
@@ -42,7 +44,7 @@ def test_confirm_email(client, fixture_profile_buyer, fixture_token_email_buyer)
 def test_login(client, fixture_profile_buyer):
     url = reverse('buyer_login')
     data = json.dumps(
-        {'email': 'buyer_2@mail.ru',
+        {'email': EMAIL_2,
          'password': '1'}
     )
     response = client.post(url, data, content_type='application/json')
@@ -52,7 +54,9 @@ def test_login(client, fixture_profile_buyer):
 @pytest.mark.django_db
 def test_redirect_reset(client, fixture_profile_buyer):
     url = reverse('buyer_redirect_reset')
-    data = json.dumps({'email': 'elena.g.2023@list.ru'})
+    data = json.dumps(
+        {'email': EMAIL_1}
+    )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
 
@@ -61,7 +65,7 @@ def test_redirect_reset(client, fixture_profile_buyer):
 def test_reset_password(client, fixture_profile_buyer):
     url = reverse('buyer_reset_password')
     data = json.dumps(
-        {'email': 'elena.g.2023@list.ru',
+        {'email': EMAIL_1,
          'password': '2'
          }
     )
@@ -72,24 +76,24 @@ def test_reset_password(client, fixture_profile_buyer):
 @pytest.mark.django_db
 def test_logout(client, fixture_token_buyer):
     url = reverse('buyer_logout')
-    data = json.dumps({'token': '111'})
+    data = json.dumps(
+        {'token': '111'}
+    )
     response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 201
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db
 def test_update_profile(client, fixture_token_buyer):
     url = reverse('buyer_update_profile')
-    data = json.dumps({
-        'token': '111',
-        'name': 'buyer',
-        'surname': 'new',
-        'password': 'pwd'
-    }
+    data = json.dumps(
+        {'token': '111',
+         'name': 'new',
+         'surname': 'new',
+         'password': 'pwd'
+         }
     )
     response = client.post(url, data, content_type='application/json')
-    y = ProfileBuyer.objects.all().values()
-    print(y)
     assert response.status_code == 201
 
 
@@ -134,7 +138,8 @@ def test_detail_product(client, fixture_profile_seller, fixture_catalog_product)
          'price': '1999.00',
          'quantity': 10,
          'store_name_id': 1,
-         'title_product': 'computer table'}
+         'title_product': 'computer table',
+         'active_status': True}
     ]
 
 
@@ -157,7 +162,7 @@ def test_remove_cart(client, fixture_shopping_cart):
     data = json.dumps(
         {"token": "222",
          "product_id": 1,
-         "quantity": 2
+         "quantity": 0
          }
     )
     response = client.post(url, data, content_type='application/json')

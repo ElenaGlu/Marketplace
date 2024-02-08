@@ -39,6 +39,7 @@ class Product(models.Model):
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=13, decimal_places=2, default=0)
     catalog_product = models.ManyToManyField(Catalog, through="CatalogProduct")
+    active_status = models.BooleanField(default=True)
 
 
 class CatalogProduct(models.Model):

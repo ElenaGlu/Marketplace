@@ -30,8 +30,10 @@ urlpatterns = [
     path('seller_redirect_reset/', s.seller_redirect_reset, name='seller_redirect_reset'),
     path('seller_reset_password/', s.seller_reset_password, name='seller_reset_password'),
     path('seller_logout/', s.seller_logout, name='seller_logout'),
+    path('seller_update_profile/', s.seller_update_profile, name='seller_update_profile'),
     path('seller_load_product/', s.seller_load_product, name='seller_load_product'),
     path('seller_change_product/', s.seller_change_product, name='seller_change_product'),
+    path('seller_archive_product/', s.seller_archive_product, name='seller_archive_product'),
 
     path('admin/', admin.site.urls),
 ]

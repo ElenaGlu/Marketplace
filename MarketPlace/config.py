@@ -14,4 +14,7 @@ KEY_PASSWORD = os.getenv('KEY_PASSWORD')
 KEY_SENDER = os.getenv('KEY_SENDER')
 KEY_SENDER_PASSWORD = os.getenv('KEY_SENDER_PASSWORD')
 
+EMAIL_1 = os.getenv('EMAIL_1')
+EMAIL_2 = os.getenv('EMAIL_2')
+EMAIL_3 = os.getenv('EMAIL_3')
 # SALT = os.getenv('SALT')

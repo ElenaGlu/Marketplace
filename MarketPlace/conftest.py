@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import pytest
 
+from config import EMAIL_2, EMAIL_1
 from seller import models as s_models
 from buyer import models as b_models
 
@@ -12,8 +13,8 @@ def fixture_email():
     email = [
         "seller_1@mail.ru",
         "seller_2@mail.ru",
-        "elena.g.2023@list.ru",
-        "shishalova310@gmail.com",
+        EMAIL_1,
+        EMAIL_2,
         "buyer_1@mail.ru"
     ]
     temporary = []
@@ -28,12 +29,12 @@ def fixture_profile_seller(fixture_email):
     password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_seller = [
         {
-            "store_name": "seller_1",
+            "store_name": "seller",
             "Individual_Taxpayer_Number": "111",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
             "password": password_hash,
-            "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
+            "email_id": fixture_email[2].id,  # "elena.g"
             "active_account": False
         },
         {
@@ -125,14 +126,14 @@ def fixture_profile_buyer(fixture_email):
             "name": "elena",
             "surname": "test_user",
             "password": password_hash,
-            "email_id": fixture_email[2].id,  # "elena.g.2023@list.ru"
+            "email_id": fixture_email[2].id,  # "elena.g"
             "active_account": False
         },
         {
             "name": "buyer_2",
             "surname": "test",
             "password": password_hash,
-            "email_id": fixture_email[3].id,  # "buyer_2@mail.ru"  "shishalova310@gmail.com"
+            "email_id": fixture_email[3].id,  # "shi"
             "active_account": True
         },
         {
@@ -154,7 +155,7 @@ def fixture_token_email_buyer(fixture_profile_buyer):
     token = [
         {
             "token": "123",
-            "profile": fixture_profile_buyer[0],  # "elena.g.2023@list.ru"
+            "profile": fixture_profile_buyer[0],  # "elena.g"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]
@@ -169,7 +170,7 @@ def fixture_token_email_seller(fixture_profile_seller):
     token = [
         {
             "token": "123",
-            "profile": fixture_profile_seller[0],  # "elena.g.2023@list.ru"
+            "profile": fixture_profile_seller[0],  # "elena.g"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
     ]

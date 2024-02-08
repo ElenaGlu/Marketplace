@@ -11,7 +11,7 @@ from buyer.buyer_services.shop import Shop
 def buyer_register(request: HttpRequest) -> HttpResponse:
     """
     Registration of a new user in the system.
-    :param request: JSON object containing strings: email, name, surname, password
+    :param request: JSON object containing strings with email, name, surname, password
     :return: "created" (201) response code
     :raises ValueError: if the user is registered in the system
     """
@@ -24,7 +24,7 @@ def buyer_register(request: HttpRequest) -> HttpResponse:
 def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     Resend the email to the specified address.
-    :param request: JSON object containing string: email
+    :param request: JSON object containing string with email
     :return: "created" (201) response code
     :raises ValueError: if the user is not registered in the system
     :raises ValueError: if the user has already confirmed their profile
@@ -42,6 +42,7 @@ def buyer_confirm_email(request) -> HttpResponse:
     :return: "created" (201) response code
     :raises ValueError: if the token has expired
     """
+
     token = request.GET.get('token')
     obj_auth = Access()
     return obj_auth.confirm_email(token, ProfileBuyer, TokenEmailBuyer)
@@ -50,7 +51,7 @@ def buyer_confirm_email(request) -> HttpResponse:
 def buyer_login(request: HttpRequest) -> JsonResponse:
     """
     User authorization in the system.
-    :param request: JSON object containing strings: email, password
+    :param request: JSON object containing strings with email, password
     :return: application access token
     :raises ValueError: if the user entered an incorrect email or password
     """
@@ -62,9 +63,9 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
 
 def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
     """
-    Password reset.
-    :param request: JSON object containing string: email
-    :return:
+    Sends a link to the email to reset the password
+    :param request: JSON object containing string with email
+    :return: "created" (201) response code
     :raises ValueError: if the user entered an incorrect email
     """
     if request.method == "POST":
@@ -75,10 +76,9 @@ def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
 
 def buyer_reset_password(request: HttpRequest) -> HttpResponse:
     """
-    Password reset.
-    :param request: JSON object containing strings email, new password
-    :return:
-    :raises ValueError: if the user entered an incorrect email
+    Changing the password to a new one
+    :param request: JSON object containing strings with email, password
+    :return: "created" (201) response code
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
@@ -88,10 +88,9 @@ def buyer_reset_password(request: HttpRequest) -> HttpResponse:
 
 def buyer_logout(request: HttpRequest) -> HttpResponse:
     """
-    Logout.
-    :param request: JSON object containing string token
-    :return:
-    :raises ValueError:
+    Authorized user logs out of the system.
+    :param request: JSON object containing string with token
+    :return: "OK" (200) response code
     """
     if request.method == "POST":
         user_data = json.loads(request.body)
@@ -100,16 +99,15 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
 
 
 @decorator_authentication
-def buyer_update_profile(profile, data) -> HttpResponse:
+def buyer_update_profile(profile, user_data) -> HttpResponse:
     """
-    Update profile
+    Authorized user changes his profile data.
     :param profile: object ProfileBuyer
-    :param data: dict containing keys with
-    :return:
-    :raises ValueError:
+    :param user_data: dict containing keys with name, surname, password
+    :return: "created" (201) response code
     """
     obj_auth = Access()
-    return obj_auth.update_profile(profile, data, ProfileBuyer, TokenBuyer)
+    return obj_auth.update_profile(profile, user_data, ProfileBuyer, TokenBuyer)
 
 
 def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:

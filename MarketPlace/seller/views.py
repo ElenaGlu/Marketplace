@@ -104,6 +104,19 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
 
 
 @decorator_authentication
+def seller_update_profile(profile, data) -> HttpResponse:
+    """
+    Update profile
+    :param profile: object ProfileBuyer
+    :param data: dict containing keys with
+    :return:
+    :raises ValueError:
+    """
+    obj_auth = Access()
+    return obj_auth.update_profile(profile, data, ProfileSeller, TokenSeller)
+
+
+@decorator_authentication
 def seller_load_product(profile, data) -> HttpResponse:
     """
     Uploading product information.
@@ -125,3 +138,15 @@ def seller_change_product(email, data) -> HttpResponse:
     """
     obj_product = SellerProduct()
     return obj_product.change_product(data)
+
+
+@decorator_authentication
+def seller_archive_product(email, data) -> HttpResponse:
+    """
+
+    :param email: Email object
+    :param data: dict containing keys with toke, product_id
+    :return: "created" (201) response code
+    """
+    obj_product = SellerProduct()
+    return obj_product.archive_product(data)

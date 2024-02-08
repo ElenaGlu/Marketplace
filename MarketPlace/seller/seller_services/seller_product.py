@@ -46,3 +46,13 @@ class SellerProduct:
         CatalogProduct.objects.bulk_create(bulk_list)
         return HttpResponse(status=201)
 
+    @staticmethod
+    def archive_product(data) -> HttpResponse:
+        """
+
+        :param data: dict containing key with product_id
+        :return: "created" (201) response code
+        """
+
+        Product.objects.filter(id=data['product_id']).update(active_status=False)
+        return HttpResponse(status=201)
