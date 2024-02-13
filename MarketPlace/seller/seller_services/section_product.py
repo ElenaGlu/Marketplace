@@ -3,13 +3,13 @@ from django.http import HttpResponse
 from seller.models import Product, CatalogProduct, Catalog
 
 
-class SellerProduct:
+class SectionProduct:
     @staticmethod
     def load_product(profile, data) -> HttpResponse:
         """
         Uploading product information.
         :param profile: ProfileSeller object
-        :param data: dict containing keys with title_product, description, quantity, price, catalog_id
+        :param data: dict containing keys - title_product, description, quantity, price, catalog_id
         :return: "created" (201) response code
         """
         data['store_name_id'] = profile.id
@@ -29,7 +29,7 @@ class SellerProduct:
     def change_product(data) -> HttpResponse:
         """
         Change the data of an existing product
-        :param data: dict containing keys with title_product, description, quantity, price, catalog_id, product_id
+        :param data: dict containing keys - title_product, description, quantity, price, catalog_id, product_id
         :return: "created" (201) response code
         """
         catalogs = data.pop('catalog_id')
@@ -49,10 +49,9 @@ class SellerProduct:
     @staticmethod
     def archive_product(data) -> HttpResponse:
         """
-
-        :param data: dict containing key with product_id
+        Adding an item to the archive.
+        :param data: dict containing keys - token, product_id
         :return: "created" (201) response code
         """
-
         Product.objects.filter(id=data['product_id']).update(active_status=False)
         return HttpResponse(status=201)

@@ -1,10 +1,8 @@
 import json
-
 import pytest
 
 from django.urls import reverse
 
-from buyer.models import ProfileBuyer
 from config import EMAIL_3, EMAIL_1, EMAIL_2
 
 

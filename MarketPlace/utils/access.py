@@ -46,7 +46,7 @@ class Access:
     def register(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Registration of a new user in the system.
-        :param user_data: dict containing keys with email, password (name, surname,)
+        :param user_data: dict containing keys - email, password, (name, surname,)
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
         :return: "created" (201) response code
@@ -72,7 +72,7 @@ class Access:
     def repeat_notification(user_data, profile_type, email_token_type) -> HttpResponse:
         """
         Resend the email to the specified address.
-        :param user_data: dict containing key with email
+        :param user_data: dict containing key - email
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
         :return: "created" (201) response code
@@ -120,7 +120,7 @@ class Access:
     def login(user_data, profile_type, token_type) -> JsonResponse:
         """
         User authorization in the system.
-        :param user_data: dict containing keys with email, password
+        :param user_data: dict containing keys - email, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
         :return: application access token
@@ -143,7 +143,7 @@ class Access:
     def redirect_reset(user_data, profile_type) -> HttpResponse:
         """
         Sends a link to the email to reset the password
-        :param user_data: dict containing key with email
+        :param user_data: dict containing key - email
         :param profile_type:  object - ProfileBuyer or ProfileSeller
         :return: "created" (201) response code
         :raises ValueError: if the user entered an incorrect email
@@ -164,7 +164,7 @@ class Access:
     def reset_password(user_data, profile_type, token_type) -> HttpResponse:
         """
         Changing the password to a new one
-        :param user_data: dict containing keys with email, password
+        :param user_data: dict containing keys - email, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
         :return: "created" (201) response code
@@ -180,7 +180,7 @@ class Access:
     def logout(user_data, token_type) -> HttpResponse:
         """
         Authorized user logs out of the system.
-        :param user_data: dict containing key with token
+        :param user_data: dict containing key - token
         :param token_type: object - TokenBuyer or TokenSeller
         :return: "OK" (200) response code
         """
@@ -192,7 +192,7 @@ class Access:
         """
         Authorized user changes his profile data.
         :param profile: object ProfileBuyer
-        :param user_data: dict containing keys with name, surname, password
+        :param user_data: dict containing keys - name, surname, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
         :return: "created" (201) response code

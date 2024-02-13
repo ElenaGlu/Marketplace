@@ -1,5 +1,4 @@
 import json
-
 import pytest
 
 from django.urls import reverse
@@ -75,7 +74,7 @@ def test_logout(client, fixture_token_seller):
     url = reverse('seller_logout')
     data = json.dumps({'token': '333'})
     response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 201
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db
@@ -126,7 +125,7 @@ def test_change_product(client, fixture_token_seller, fixture_catalog_product):
 
 
 @pytest.mark.django_db
-def test_change_product(client, fixture_token_seller, fixture_catalog_product):
+def test_archive_product(client, fixture_token_seller, fixture_catalog_product):
     url = reverse('seller_archive_product')
     data = json.dumps(
         {'token': '333',  # "seller_1@mail.ru"
