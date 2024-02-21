@@ -8,9 +8,9 @@ class ProfileSeller(models.Model):
         ('ООО', 'Общество с Ограниченной Ответственностью'),
     )
     store_name = models.CharField(max_length=20, default=None)
-    Individual_Taxpayer_Number = models.CharField(max_length=12)
+    individual_taxpayer_number = models.CharField(max_length=12)
     type_of_organization = models.CharField(choices=TYPE_ORGANIZATION)
-    country_of_registration = CountryField()
+    country_of_registration = CountryField(max_length=150)
     password = models.CharField(max_length=150)
     email = models.OneToOneField('buyer.Email', on_delete=models.CASCADE)
     active_account = models.BooleanField(default=False)
@@ -18,13 +18,13 @@ class ProfileSeller(models.Model):
 
 class TokenSeller(models.Model):
     profile = models.ForeignKey(ProfileSeller, on_delete=models.CASCADE)
-    token = models.CharField()
+    token = models.CharField(max_length=254)
     stop_date = models.DateTimeField(default=None)
 
 
 class TokenEmailSeller(models.Model):
     profile = models.ForeignKey(ProfileSeller, on_delete=models.CASCADE)
-    token = models.CharField()
+    token = models.CharField(max_length=254)
     stop_date = models.DateTimeField(default=None)
 
 

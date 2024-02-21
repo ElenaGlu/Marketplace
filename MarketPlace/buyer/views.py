@@ -4,7 +4,7 @@ from django.http import HttpRequest, JsonResponse, HttpResponse
 
 from buyer.models import ProfileBuyer, TokenBuyer, TokenEmailBuyer
 from seller.models import Catalog
-from utils.access import Access, decorator_authentication
+from utils.access import Access, authentication_check
 from buyer.buyer_services.shop import Shop
 
 
@@ -17,7 +17,8 @@ def buyer_register(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.register(json.loads(request.body), ProfileBuyer, TokenEmailBuyer)
+        obj_auth.register(json.loads(request.body), ProfileBuyer, TokenEmailBuyer)
+        return HttpResponse(status=201)
 
 
 def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -30,7 +31,8 @@ def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.repeat_notification(json.loads(request.body), ProfileBuyer, TokenEmailBuyer)
+        obj_auth.repeat_notification(json.loads(request.body), ProfileBuyer, TokenEmailBuyer)
+        return HttpResponse(status=201)
 
 
 def buyer_confirm_email(request) -> HttpResponse:
@@ -41,7 +43,8 @@ def buyer_confirm_email(request) -> HttpResponse:
     :raises ValueError: if the token has expired
     """
     obj_auth = Access()
-    return obj_auth.confirm_email(request.GET.get('token'), ProfileBuyer, TokenEmailBuyer)
+    obj_auth.confirm_email(request.GET.get('token'), ProfileBuyer, TokenEmailBuyer)
+    return HttpResponse(status=201)
 
 
 def buyer_login(request: HttpRequest) -> JsonResponse:
@@ -53,7 +56,8 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.login(json.loads(request.body), ProfileBuyer, TokenBuyer)
+        token = obj_auth.login(json.loads(request.body), ProfileBuyer, TokenBuyer)
+        return JsonResponse(token, status=200, safe=False)
 
 
 def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
@@ -65,7 +69,8 @@ def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.redirect_reset(json.loads(request.body), ProfileBuyer)
+        obj_auth.redirect_reset(json.loads(request.body), ProfileBuyer)
+        return HttpResponse(status=201)
 
 
 def buyer_reset_password(request: HttpRequest) -> HttpResponse:
@@ -76,7 +81,8 @@ def buyer_reset_password(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.reset_password(json.loads(request.body), ProfileBuyer, TokenBuyer)
+        obj_auth.reset_password(json.loads(request.body), ProfileBuyer, TokenBuyer)
+        return HttpResponse(status=201)
 
 
 def buyer_logout(request: HttpRequest) -> HttpResponse:
@@ -87,10 +93,11 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.logout(json.loads(request.body), TokenBuyer)
+        obj_auth.logout(json.loads(request.body), TokenBuyer)
+        return HttpResponse(status=200)
 
 
-@decorator_authentication
+@authentication_check
 def buyer_update_profile(profile, user_data) -> HttpResponse:
     """
     Authorized user changes his profile data.
@@ -120,7 +127,8 @@ def buyer_selects_products_by_category(request: HttpRequest) -> JsonResponse:
     """
     if request.method == "POST":
         obj_shop = Shop()
-        return obj_shop.selects_products_by_category(json.loads(request.body))
+        products_by_category = obj_shop.selects_products_by_category(json.loads(request.body))
+        return JsonResponse(products_by_category, status=200, safe=False)
 
 
 def buyer_detail_product(request: HttpRequest) -> JsonResponse:
@@ -131,30 +139,46 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
     """
     if request.method == "POST":
         obj_shop = Shop()
-        return obj_shop.detail_product(json.loads(request.body))
+        detail_info_product = obj_shop.detail_product(json.loads(request.body))
+        return JsonResponse(detail_info_product, status=200, safe=False)
 
 
-@decorator_authentication
+@authentication_check
 def buyer_add_cart(profile, data) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
     :param profile: object ProfileBuyer
-    :param data: dict containing keys - token, product_id, quantity
+    :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
     :raises ValueError: if the requested quantity of goods is not available
     """
     obj_shop = Shop()
-    return obj_shop.add_cart(profile, data)
+    obj_shop.add_cart(profile, data)
+    return HttpResponse(status=201)
 
 
-@decorator_authentication
+@authentication_check
+def buyer_change_cart(profile, data) -> HttpResponse:
+    """
+    Authorized user changes the quantity of the product in the cart.
+    :param profile: object ProfileBuyer
+    :param data: dict containing keys - product_id, quantity
+    :return: "created" (201) response code
+    :raises ValueError: if the requested quantity of goods is not available
+    """
+    obj_shop = Shop()
+    obj_shop.change_cart(profile, data)
+    return HttpResponse(status=201)
+
+
+@authentication_check
 def buyer_remove_cart(profile, data) -> HttpResponse:
     """
-    Authorized user remove items from the shopping cart.
+    Authorized user removes an item from the shopping cart.
     :param profile: object ProfileBuyer
-    :param data: dict containing keys - token, product_id, quantity
-    :return: "created" (201) response code
-    :raises ValueError: if the requested quantity of goods is not available
+    :param data: dict containing keys - product_id, quantity
+    :return: "OK" (200) response code
     """
     obj_shop = Shop()
-    return obj_shop.remove_cart(profile, data)
+    obj_shop.remove_cart(profile, data)
+    return HttpResponse(status=200)

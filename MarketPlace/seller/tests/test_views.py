@@ -13,7 +13,7 @@ def test_register(client, fixture_profile_seller):
     data = json.dumps(
         {'email': EMAIL_3,
          'store_name': 'store',
-         'Individual_Taxpayer_Number': '12345',
+         'individual_taxpayer_number': '12345',
          'type_of_organization': 'ИП',
          'country_of_registration': 'RU',
          'password': 'password'}
@@ -83,7 +83,7 @@ def test_update_profile(client, fixture_token_seller):
     data = json.dumps({
         'token': '333',
         'store_name': 'new_seller',
-        'Individual_Taxpayer_Number': '222',
+        'individual_taxpayer_number': '222',
         'password': 'pwd'
     }
     )

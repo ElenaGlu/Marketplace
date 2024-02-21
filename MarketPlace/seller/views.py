@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from seller.models import ProfileSeller, TokenSeller, TokenEmailSeller
 from seller.seller_services.section_product import SectionProduct
-from utils.access import Access, decorator_authentication
+from utils.access import Access, authentication_check
 
 
 def seller_register(request: HttpRequest) -> HttpResponse:
@@ -12,7 +12,7 @@ def seller_register(request: HttpRequest) -> HttpResponse:
     Registration of a new user in the system.
     :param request: JSON object containing keys - email,
                                                   store_name,
-                                                  Individual_Taxpayer_Number,
+                                                  individual_taxpayer_number,
                                                   type_of_organization,
                                                   country_of_registration,
                                                   password
@@ -21,7 +21,8 @@ def seller_register(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.register(json.loads(request.body), ProfileSeller, TokenEmailSeller)
+        obj_auth.register(json.loads(request.body), ProfileSeller, TokenEmailSeller)
+        return HttpResponse(status=201)
 
 
 def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
@@ -34,7 +35,8 @@ def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.repeat_notification(json.loads(request.body), ProfileSeller, TokenEmailSeller)
+        obj_auth.repeat_notification(json.loads(request.body), ProfileSeller, TokenEmailSeller)
+        return HttpResponse(status=201)
 
 
 def seller_confirm_email(request) -> HttpResponse:
@@ -45,7 +47,8 @@ def seller_confirm_email(request) -> HttpResponse:
     :raises ValueError: if the token has expired
     """
     obj_auth = Access()
-    return obj_auth.confirm_email(request.GET.get('token'), ProfileSeller, TokenEmailSeller)
+    obj_auth.confirm_email(request.GET.get('token'), ProfileSeller, TokenEmailSeller)
+    return HttpResponse(status=201)
 
 
 def seller_login(request: HttpRequest) -> JsonResponse:
@@ -57,7 +60,8 @@ def seller_login(request: HttpRequest) -> JsonResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.login(json.loads(request.body), ProfileSeller, TokenSeller)
+        token = obj_auth.login(json.loads(request.body), ProfileSeller, TokenSeller)
+        return JsonResponse(token, status=200, safe=False)
 
 
 def seller_redirect_reset(request: HttpRequest) -> HttpResponse:
@@ -69,7 +73,8 @@ def seller_redirect_reset(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.redirect_reset(json.loads(request.body), ProfileSeller)
+        obj_auth.redirect_reset(json.loads(request.body), ProfileSeller)
+        return HttpResponse(status=201)
 
 
 def seller_reset_password(request: HttpRequest) -> HttpResponse:
@@ -80,7 +85,8 @@ def seller_reset_password(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.reset_password(json.loads(request.body), ProfileSeller, TokenSeller)
+        obj_auth.reset_password(json.loads(request.body), ProfileSeller, TokenSeller)
+        return HttpResponse(status=201)
 
 
 def seller_logout(request: HttpRequest) -> HttpResponse:
@@ -91,22 +97,23 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        return obj_auth.logout(json.loads(request.body), TokenSeller)
+        obj_auth.logout(json.loads(request.body), TokenSeller)
+        return HttpResponse(status=200)
 
 
-@decorator_authentication
+@authentication_check
 def seller_update_profile(profile, user_data) -> HttpResponse:
     """
     Authorized user changes his profile data.
     :param profile: object ProfileSeller
-    :param user_data: dict containing keys - store_name, Individual_Taxpayer_Number, type_of_organization,
+    :param user_data: dict containing keys - store_name, individual_taxpayer_number, type_of_organization,
     :return: "created" (201) response code
     """
     obj_auth = Access()
     return obj_auth.update_profile(profile, user_data, ProfileSeller, TokenSeller)
 
 
-@decorator_authentication
+@authentication_check
 def seller_load_product(profile, data) -> HttpResponse:
     """
     Uploading product information.
@@ -115,10 +122,11 @@ def seller_load_product(profile, data) -> HttpResponse:
     :return: "created" (201) response code
     """
     obj_product = SectionProduct()
-    return obj_product.load_product(profile, data)
+    obj_product.load_product(profile, data)
+    return HttpResponse(status=201)
 
 
-@decorator_authentication
+@authentication_check
 def seller_change_product(email, data) -> HttpResponse:
     """
     Change the data of an existing product
@@ -127,10 +135,11 @@ def seller_change_product(email, data) -> HttpResponse:
     :return: "created" (201) response code
     """
     obj_product = SectionProduct()
-    return obj_product.change_product(data)
+    obj_product.change_product(data)
+    return HttpResponse(status=201)
 
 
-@decorator_authentication
+@authentication_check
 def seller_archive_product(email, data) -> HttpResponse:
     """
     Adding an item to the archive.
@@ -139,4 +148,5 @@ def seller_archive_product(email, data) -> HttpResponse:
     :return: "created" (201) response code
     """
     obj_product = SectionProduct()
-    return obj_product.archive_product(data)
+    obj_product.archive_product(data)
+    return HttpResponse(status=201)

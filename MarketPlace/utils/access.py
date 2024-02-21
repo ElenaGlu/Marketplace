@@ -12,9 +12,9 @@ from buyer.models import Email, TokenBuyer
 from seller.models import TokenSeller
 
 
-def decorator_authentication(func):
+def authentication_check(func):
     """
-    Verification of the user's primary authorization token.
+    Check of the user's primary authorization token.
     """
 
     def wrapper(*args):
@@ -43,13 +43,13 @@ class Access:
     """
 
     @staticmethod
-    def register(user_data, profile_type, email_token_type) -> HttpResponse:
+    def register(user_data, profile_type, email_token_type) -> None:
         """
         Registration of a new user in the system.
         :param user_data: dict containing keys - email, password, (name, surname,)
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
-        :return: "created" (201) response code
+        :return: None
         :raises ValueError: if the user is registered in the system
         """
         user_email = user_data['email']
@@ -66,16 +66,15 @@ class Access:
 
         token = data_token['token']
         Access.send_notification([user_email], f'http://localhost/confirm/?token={token}')
-        return HttpResponse(status=201)
 
     @staticmethod
-    def repeat_notification(user_data, profile_type, email_token_type) -> HttpResponse:
+    def repeat_notification(user_data, profile_type, email_token_type) -> None:
         """
         Resend the email to the specified address.
         :param user_data: dict containing key - email
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
-        :return: "created" (201) response code
+        :return: None
         :raises ValueError: if the user is not registered in the system
         :raises ValueError: if the user has already confirmed their profile
         """
@@ -94,16 +93,15 @@ class Access:
                 raise ValueError('The users email has been confirmed')
         else:
             raise ValueError('it is necessary to register')
-        return HttpResponse(status=201)
 
     @staticmethod
-    def confirm_email(token, profile_type, email_token_type) -> HttpResponse:
+    def confirm_email(token, profile_type, email_token_type) -> None:
         """
         Confirms the user's profile.
         :param token: string with token
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
-        :return: "created" (201) response code
+        :return: None
         :raises ValueError: if the token has expired
         """
         obj = email_token_type.objects.filter(token=token).first().profile_id
@@ -112,12 +110,11 @@ class Access:
         if obj and stop_date.timestamp() > now_date.timestamp():
             profile_type.objects.filter(id=obj).update(active_account=True)
             email_token_type.objects.filter(token=token).first().delete()
-            return HttpResponse(status=201)
         else:
             raise ValueError('token is invalid')
 
     @staticmethod
-    def login(user_data, profile_type, token_type) -> JsonResponse:
+    def login(user_data, profile_type, token_type) -> str:
         """
         User authorization in the system.
         :param user_data: dict containing keys - email, password
@@ -133,19 +130,19 @@ class Access:
             if user.password == password_hash:
                 data_token = Access.create_token(user)
                 token_type.objects.create(**data_token)
-                return JsonResponse(data_token['token'], status=200, safe=False)
+                return data_token['token']
             else:
                 raise ValueError('invalid username or password')
         else:
             raise ValueError('user does not exist')
 
     @staticmethod
-    def redirect_reset(user_data, profile_type) -> HttpResponse:
+    def redirect_reset(user_data, profile_type) -> None:
         """
         Sends a link to the email to reset the password
         :param user_data: dict containing key - email
         :param profile_type:  object - ProfileBuyer or ProfileSeller
-        :return: "created" (201) response code
+        :return: None
         :raises ValueError: if the user entered an incorrect email
         """
         user_email = user_data['email']
@@ -158,34 +155,31 @@ class Access:
                 raise ValueError('user does not exist')
         else:
             raise ValueError('user does not exist')
-        return HttpResponse(status=201)
 
     @staticmethod
-    def reset_password(user_data, profile_type, token_type) -> HttpResponse:
+    def reset_password(user_data, profile_type, token_type) -> None:
         """
         Changing the password to a new one
         :param user_data: dict containing keys - email, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
-        :return: "created" (201) response code
+        :return: None
         """
         email = Email.objects.filter(email=user_data['email']).first()
         profile = profile_type.objects.filter(email=email).first()
         token_type.objects.filter(profile=profile).delete()
         hash_password = Access.create_hash(user_data['password'])
         profile_type.objects.filter(email=email).update(password=hash_password)
-        return HttpResponse(status=201)
 
     @staticmethod
-    def logout(user_data, token_type) -> HttpResponse:
+    def logout(user_data, token_type) -> None:
         """
         Authorized user logs out of the system.
         :param user_data: dict containing key - token
         :param token_type: object - TokenBuyer or TokenSeller
-        :return: "OK" (200) response code
+        :return: None
         """
         token_type.objects.filter(token=user_data['token']).delete()
-        return HttpResponse(status=200)
 
     @staticmethod
     def update_profile(profile, user_data, profile_type, token_type) -> HttpResponse:
@@ -195,7 +189,7 @@ class Access:
         :param user_data: dict containing keys - name, surname, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
-        :return: "created" (201) response code
+        :return:
         """
         if 'password' not in user_data:
             profile_type.objects.filter(id=profile.id).update(**user_data)

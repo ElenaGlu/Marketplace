@@ -4,6 +4,7 @@ import pytest
 from django.urls import reverse
 
 from config import EMAIL_3, EMAIL_1, EMAIL_2
+from seller.models import Catalog
 
 
 @pytest.mark.django_db
@@ -110,6 +111,7 @@ def test_provide_catalogs(client, fixture_catalog):
 
 @pytest.mark.django_db
 def test_selects_products_by_category(client, fixture_profile_seller, fixture_catalog_product):
+    print(Catalog.objects.all().values())
     url = reverse('buyer_selects_products_by_category')
     data = json.dumps({"catalog": 1})
     response = client.post(url, data, content_type='application/json')
@@ -155,13 +157,25 @@ def test_add_cart(client, fixture_shopping_cart):
 
 
 @pytest.mark.django_db
+def test_change_cart(client, fixture_shopping_cart):
+    url = reverse('buyer_change_cart')
+    data = json.dumps(
+        {"token": "222",
+         "product_id": 1,
+         "quantity": 5
+         }
+    )
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
 def test_remove_cart(client, fixture_shopping_cart):
     url = reverse('buyer_remove_cart')
     data = json.dumps(
         {"token": "222",
          "product_id": 1,
-         "quantity": 0
          }
     )
     response = client.post(url, data, content_type='application/json')
-    assert response.status_code == 201
+    assert response.status_code == 200

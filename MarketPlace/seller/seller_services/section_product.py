@@ -1,16 +1,14 @@
-from django.http import HttpResponse
-
 from seller.models import Product, CatalogProduct, Catalog
 
 
 class SectionProduct:
     @staticmethod
-    def load_product(profile, data) -> HttpResponse:
+    def load_product(profile, data) -> None:
         """
         Uploading product information.
         :param profile: ProfileSeller object
         :param data: dict containing keys - title_product, description, quantity, price, catalog_id
-        :return: "created" (201) response code
+        :return: None
         """
         data['store_name_id'] = profile.id
         catalogs = data.pop('catalog_id')
@@ -23,14 +21,12 @@ class SectionProduct:
             )
         CatalogProduct.objects.bulk_create(bulk_list)
 
-        return HttpResponse(status=201)
-
     @staticmethod
-    def change_product(data) -> HttpResponse:
+    def change_product(data) -> None:
         """
         Change the data of an existing product
         :param data: dict containing keys - title_product, description, quantity, price, catalog_id, product_id
-        :return: "created" (201) response code
+        :return: None
         """
         catalogs = data.pop('catalog_id')
         product = data.pop('product_id')
@@ -44,14 +40,12 @@ class SectionProduct:
                 CatalogProduct(catalog_id=catalog.id, product_id=product_update)
             )
         CatalogProduct.objects.bulk_create(bulk_list)
-        return HttpResponse(status=201)
 
     @staticmethod
-    def archive_product(data) -> HttpResponse:
+    def archive_product(data) -> None:
         """
         Adding an item to the archive.
         :param data: dict containing keys - token, product_id
-        :return: "created" (201) response code
+        :return: None
         """
         Product.objects.filter(id=data['product_id']).update(active_status=False)
-        return HttpResponse(status=201)

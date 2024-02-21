@@ -17,13 +17,13 @@ class ProfileBuyer(models.Model):
 
 class TokenBuyer(models.Model):
     profile = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
-    token = models.CharField()
+    token = models.CharField(max_length=254)
     stop_date = models.DateTimeField(default=None)
 
 
 class TokenEmailBuyer(models.Model):
     profile = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
-    token = models.CharField()
+    token = models.CharField(max_length=254)
     stop_date = models.DateTimeField(default=None)
 
 

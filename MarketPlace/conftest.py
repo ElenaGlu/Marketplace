@@ -28,27 +28,27 @@ def fixture_profile_seller(fixture_email):
     salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
     password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_seller = [
-        {
+        {"id": 1,
             "store_name": "seller",
-            "Individual_Taxpayer_Number": "111",
+            "individual_taxpayer_number": "111",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
             "password": password_hash,
             "email_id": fixture_email[2].id,  # "elena.g"
             "active_account": False
         },
-        {
+        {"id": 2,
             "store_name": "seller_2",
-            "Individual_Taxpayer_Number": "222",
+            "individual_taxpayer_number": "222",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
             "password": password_hash,
             "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
             "active_account": True
         },
-        {
+        {"id": 3,
             "store_name": "seller_1",
-            "Individual_Taxpayer_Number": "111",
+            "individual_taxpayer_number": "111",
             "type_of_organization": "ИП",
             "country_of_registration": "RU",
             "password": password_hash,
@@ -66,22 +66,22 @@ def fixture_profile_seller(fixture_email):
 def fixture_catalog():
     catalog = ["home", "furniture"]
     temporary = []
-    for obj in catalog:
-        temporary.append(s_models.Catalog(title_catalog=obj))
+    for idx, obj in enumerate(catalog):
+        temporary.append(s_models.Catalog(id=idx + 1, title_catalog=obj))
     return s_models.Catalog.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
 def fixture_product(fixture_catalog, fixture_profile_seller):
     product = [
-        {
-            "store_name_id": fixture_profile_seller[0].id,  # "seller_1"
-            "title_product": "computer table",
-            "description": "size:1500",
-            "quantity": 10,
-            "price": 1999,
-        },
-        {
+        {"id": 1,
+         "store_name_id": fixture_profile_seller[0].id,  # "seller_1"
+         "title_product": "computer table",
+         "description": "size:1500",
+         "quantity": 10,
+         "price": 1999,
+         },
+        {"id": 2,
             "store_name_id": fixture_profile_seller[1].id,  # "seller_2"
             "title_product": "flower",
             "description": "ficus",
@@ -99,14 +99,17 @@ def fixture_product(fixture_catalog, fixture_profile_seller):
 def fixture_catalog_product(fixture_product, fixture_catalog):
     catalog_product = [
         {
+            "id": 1,
             "product_id": fixture_product[0].id,
             "catalog_id": fixture_catalog[0].id
         },
         {
+            "id": 2,
             "product_id": fixture_product[0].id,
             "catalog_id": fixture_catalog[1].id
         },
         {
+            "id": 3,
             "product_id": fixture_product[1].id,
             "catalog_id": fixture_catalog[0].id
         }
@@ -114,7 +117,7 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
     temporary = []
     for obj in catalog_product:
         temporary.append(s_models.CatalogProduct(**obj))
-    s_models.CatalogProduct.objects.bulk_create(temporary)
+    return s_models.CatalogProduct.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
