@@ -6,6 +6,7 @@ import pytest
 from config import EMAIL_2, EMAIL_1
 from seller import models as s_models
 from buyer import models as b_models
+from utils.access import Access
 
 
 @pytest.fixture()
@@ -25,8 +26,7 @@ def fixture_email():
 
 @pytest.fixture()
 def fixture_profile_seller(fixture_email):
-    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
+    password_hash = Access.create_hash('1')
     profile_seller = [
         {"id": 2,
             "store_name": "seller",
@@ -122,8 +122,7 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
 
 @pytest.fixture()
 def fixture_profile_buyer(fixture_email):
-    salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-    password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
+    password_hash = Access.create_hash('1')
     profile_buyer = [
         {
             "name": "elena",

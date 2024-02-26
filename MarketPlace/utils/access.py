@@ -2,6 +2,7 @@ import datetime
 
 import hashlib
 import json
+import os
 import smtplib
 import jwt
 
@@ -126,7 +127,8 @@ class Access:
         email = Email.objects.filter(email=user_data['email']).first()
         user = profile_type.objects.filter(email=email).first()
         if user.active_account:
-            password_hash = Access.create_hash(user_data['password'])
+            salt_from_storage = user.password[:32]
+            password_hash = Access.create_hash(user_data['password'], salt_from_storage)
             if user.password == password_hash:
                 data_token = Access.create_token(user)
                 token_type.objects.create(**data_token)
@@ -224,13 +226,15 @@ class Access:
                 }
 
     @staticmethod
-    def create_hash(password) -> str:
+    def create_hash(password, salt) -> str:
         """
         Password hashing.
         :return: Hash of the string
         """
-        salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
-        return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000).hex()
+        salt = os.urandom(32)
+        key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+        storage = salt + key
+        return storage.hex()
 
     @staticmethod
     def send_notification(email, txt) -> None:
