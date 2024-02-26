@@ -3,15 +3,14 @@ import pytest
 
 from django.urls import reverse
 
-from config import EMAIL_3, EMAIL_1
-from seller.models import ProfileSeller
+from config import EMAIL_1, EMAIL_4
 
 
 @pytest.mark.django_db
 def test_register(client, fixture_profile_seller):
     url = reverse('seller_register')
     data = json.dumps(
-        {'email': EMAIL_3,
+        {'email': EMAIL_4,
          'store_name': 'store',
          'individual_taxpayer_number': '12345',
          'type_of_organization': 'ИП',
@@ -88,8 +87,6 @@ def test_update_profile(client, fixture_token_seller):
     }
     )
     response = client.post(url, data, content_type='application/json')
-    y = ProfileSeller.objects.all().values()
-    print(y)
     assert response.status_code == 201
 
 
@@ -117,7 +114,7 @@ def test_change_product(client, fixture_token_seller, fixture_catalog_product):
          'quantity': 5,
          'price': 10000,
          'catalog_id': [1],
-         'product_id': 1
+         'product_id': 3
          }
     )
     response = client.post(url, data, content_type='application/json')

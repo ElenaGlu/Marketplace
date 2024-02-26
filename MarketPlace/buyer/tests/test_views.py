@@ -119,25 +119,25 @@ def test_selects_products_by_category(client, fixture_profile_seller, fixture_ca
 
     assert response.status_code == 200
     assert resp_json == [
-        {'id': 1, 'price': '1999.00', 'title_product': 'computer table'},
-        {'id': 2, 'price': '799.00', 'title_product': 'flower'}
+        {'id': 2, 'price': '1999.00', 'title_product': 'computer table'},
+        {'id': 3, 'price': '799.00', 'title_product': 'flower'}
     ]
 
 
 @pytest.mark.django_db
 def test_detail_product(client, fixture_profile_seller, fixture_catalog_product):
     url = reverse('buyer_detail_product')
-    data = json.dumps({"id": 1})
+    data = json.dumps({"id": 2})
     response = client.post(url, data, content_type='application/json')
     resp_json = response.json()
 
     assert response.status_code == 200
     assert resp_json == [
         {'description': 'size:1500',
-         'id': 1,
+         'id': 2,
          'price': '1999.00',
          'quantity': 10,
-         'store_name_id': 1,
+         'store_name_id': 2,
          'title_product': 'computer table',
          'active_status': True}
     ]
@@ -148,7 +148,7 @@ def test_add_cart(client, fixture_shopping_cart):
     url = reverse('buyer_add_cart')
     data = json.dumps(
         {"token": "222",
-         "product_id": 1,
+         "product_id": 2,
          "quantity": 2
          }
     )
@@ -161,7 +161,7 @@ def test_change_cart(client, fixture_shopping_cart):
     url = reverse('buyer_change_cart')
     data = json.dumps(
         {"token": "222",
-         "product_id": 1,
+         "product_id": 2,
          "quantity": 5
          }
     )
@@ -174,7 +174,7 @@ def test_remove_cart(client, fixture_shopping_cart):
     url = reverse('buyer_remove_cart')
     data = json.dumps(
         {"token": "222",
-         "product_id": 1,
+         "product_id": 2,
          }
     )
     response = client.post(url, data, content_type='application/json')

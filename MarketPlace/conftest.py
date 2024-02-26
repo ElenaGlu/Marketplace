@@ -28,7 +28,7 @@ def fixture_profile_seller(fixture_email):
     salt = b'\xefQ\x8d\xad\x8f\xd5MR\xe1\xcb\tF \xf1t0\xb6\x02\xa9\xc09\xae\xdf\xa4\x96\xd0\xc6\xd6\x93:%\x19'
     password_hash = hashlib.pbkdf2_hmac('sha256', '1'.encode('utf-8'), salt, 100000).hex()
     profile_seller = [
-        {"id": 1,
+        {"id": 2,
             "store_name": "seller",
             "individual_taxpayer_number": "111",
             "type_of_organization": "ИП",
@@ -37,7 +37,7 @@ def fixture_profile_seller(fixture_email):
             "email_id": fixture_email[2].id,  # "elena.g"
             "active_account": False
         },
-        {"id": 2,
+        {"id": 3,
             "store_name": "seller_2",
             "individual_taxpayer_number": "222",
             "type_of_organization": "ИП",
@@ -46,7 +46,7 @@ def fixture_profile_seller(fixture_email):
             "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
             "active_account": True
         },
-        {"id": 3,
+        {"id": 4,
             "store_name": "seller_1",
             "individual_taxpayer_number": "111",
             "type_of_organization": "ИП",
@@ -74,14 +74,14 @@ def fixture_catalog():
 @pytest.fixture()
 def fixture_product(fixture_catalog, fixture_profile_seller):
     product = [
-        {"id": 1,
+        {"id": 2,
          "store_name_id": fixture_profile_seller[0].id,  # "seller_1"
          "title_product": "computer table",
          "description": "size:1500",
          "quantity": 10,
          "price": 1999,
          },
-        {"id": 2,
+        {"id": 3,
             "store_name_id": fixture_profile_seller[1].id,  # "seller_2"
             "title_product": "flower",
             "description": "ficus",
@@ -99,17 +99,17 @@ def fixture_product(fixture_catalog, fixture_profile_seller):
 def fixture_catalog_product(fixture_product, fixture_catalog):
     catalog_product = [
         {
-            "id": 1,
+            "id": 4,
             "product_id": fixture_product[0].id,
             "catalog_id": fixture_catalog[0].id
         },
         {
-            "id": 2,
+            "id": 5,
             "product_id": fixture_product[0].id,
             "catalog_id": fixture_catalog[1].id
         },
         {
-            "id": 3,
+            "id": 6,
             "product_id": fixture_product[1].id,
             "catalog_id": fixture_catalog[0].id
         }
@@ -206,7 +206,7 @@ def fixture_token_buyer(fixture_profile_buyer):
 @pytest.fixture()
 def fixture_token_seller(fixture_profile_seller):
     token = [
-        {
+        {"id": 1,
             "token": "333",
             "profile": fixture_profile_seller[2],  # "seller_1@mail.ru"
             "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)

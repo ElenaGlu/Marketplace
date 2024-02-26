@@ -30,14 +30,14 @@ class SectionProduct:
         """
         catalogs = data.pop('catalog_id')
         product = data.pop('product_id')
-        product_update = Product.objects.filter(id=product).update(**data)
+        Product.objects.filter(id=product).update(**data)
         CatalogProduct.objects.filter(product_id=product).delete()
 
         bulk_list = list()
         for elem in catalogs:
             catalog = Catalog.objects.filter(id=elem).first()
             bulk_list.append(
-                CatalogProduct(catalog_id=catalog.id, product_id=product_update)
+                CatalogProduct(catalog_id=catalog.id, product_id=product)
             )
         CatalogProduct.objects.bulk_create(bulk_list)
 
