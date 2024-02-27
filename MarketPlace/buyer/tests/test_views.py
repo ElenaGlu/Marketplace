@@ -1,9 +1,9 @@
 import json
-import pytest
 
+import pytest
 from django.urls import reverse
 
-from config import EMAIL_3, EMAIL_1, EMAIL_2
+from config import EMAIL_1, EMAIL_2, EMAIL_3
 from seller.models import Catalog
 
 

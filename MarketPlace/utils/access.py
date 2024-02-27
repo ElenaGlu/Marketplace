@@ -1,15 +1,15 @@
+import base64
 import datetime
-
 import hashlib
 import json
 import os
 import smtplib
-import jwt
 
+import jwt
 from django.http import HttpResponse, JsonResponse
 
-from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 from buyer.models import Email, TokenBuyer
+from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 from seller.models import TokenSeller
 
 
@@ -127,8 +127,7 @@ class Access:
         email = Email.objects.filter(email=user_data['email']).first()
         user = profile_type.objects.filter(email=email).first()
         if user.active_account:
-            salt_from_storage = user.password[:32]
-            password_hash = Access.create_hash(user_data['password'], salt_from_storage)
+            password_hash = Access.create_hash(user_data['password'])
             if user.password == password_hash:
                 data_token = Access.create_token(user)
                 token_type.objects.create(**data_token)
@@ -205,7 +204,7 @@ class Access:
             email = list(profile_type.objects.filter(id=profile.id).values('email'))[0]['email']
             email = list(Email.objects.filter(id=email).values('email'))[0]['email']
 
-            Access.send_notification([email], f'xxx')
+            Access.send_notification([email], f'')
             return JsonResponse(new_token['token'], status=201, safe=False)
         return HttpResponse(status=201)
 
@@ -226,15 +225,15 @@ class Access:
                 }
 
     @staticmethod
-    def create_hash(password, salt) -> str:
+    def create_hash(password, salt=os.urandom(32)) -> str:
         """
         Password hashing.
         :return: Hash of the string
         """
-        salt = os.urandom(32)
         key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
         storage = salt + key
-        return storage.hex()
+        return base64.b64encode(storage).decode('ascii').strip()
+
 
     @staticmethod
     def send_notification(email, txt) -> None:

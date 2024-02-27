@@ -1,4 +1,4 @@
-from seller.models import Product, CatalogProduct, Catalog
+from seller.models import Catalog, CatalogProduct, Product
 
 
 class SectionProduct:

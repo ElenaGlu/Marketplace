@@ -1,11 +1,10 @@
 import datetime
 
-import hashlib
 import pytest
 
-from config import EMAIL_2, EMAIL_1
-from seller import models as s_models
 from buyer import models as b_models
+from config import EMAIL_1, EMAIL_2
+from seller import models as s_models
 from utils.access import Access
 
 
@@ -158,7 +157,7 @@ def fixture_token_email_buyer(fixture_profile_buyer):
         {
             "token": "123",
             "profile": fixture_profile_buyer[0],  # "elena.g"
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            "stop_date": datetime.datetime.now() + datetime.timedelta(hours=24)
         }
     ]
     temporary = []
@@ -173,7 +172,7 @@ def fixture_token_email_seller(fixture_profile_seller):
         {
             "token": "123",
             "profile": fixture_profile_seller[0],  # "elena.g"
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            "stop_date": datetime.datetime.now() + datetime.timedelta(hours=24)
         }
     ]
     temporary = []
@@ -188,12 +187,12 @@ def fixture_token_buyer(fixture_profile_buyer):
         {
             "token": "111",
             "profile": fixture_profile_buyer[1],  # "buyer_2@mail.ru"
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            "stop_date": datetime.datetime.now() + datetime.timedelta(hours=24)
         },
         {
             "token": "222",
             "profile": fixture_profile_buyer[2],  # "buyer_1@mail.ru"
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            "stop_date": datetime.datetime.now() + datetime.timedelta(hours=24)
         }
     ]
     temporary = []
@@ -208,7 +207,7 @@ def fixture_token_seller(fixture_profile_seller):
         {"id": 1,
             "token": "333",
             "profile": fixture_profile_seller[2],  # "seller_1@mail.ru"
-            "stop_date": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            "stop_date": datetime.datetime.now() + datetime.timedelta(hours=24)
         }
     ]
     temporary = []

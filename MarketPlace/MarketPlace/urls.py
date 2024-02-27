@@ -1,10 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 
-
 from buyer import views as b
 from seller import views as s
-
 
 urlpatterns = [
     path('buyer_register/', b.buyer_register, name='buyer_register'),

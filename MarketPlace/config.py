@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -18,3 +19,4 @@ EMAIL_1 = os.getenv('EMAIL_1')
 EMAIL_2 = os.getenv('EMAIL_2')
 EMAIL_3 = os.getenv('EMAIL_3')
 EMAIL_4 = os.getenv('EMAIL_4')
+

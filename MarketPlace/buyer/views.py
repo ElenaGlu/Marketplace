@@ -1,11 +1,11 @@
 import json
 
-from django.http import HttpRequest, JsonResponse, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 
+from buyer.buyer_services.shop import Shop
 from buyer.models import ProfileBuyer, TokenBuyer, TokenEmailBuyer
 from seller.models import Catalog
 from utils.access import Access, authentication_check
-from buyer.buyer_services.shop import Shop
 
 
 def buyer_register(request: HttpRequest) -> HttpResponse:

@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from seller.models import ProfileSeller, TokenSeller, TokenEmailSeller
+from seller.models import ProfileSeller, TokenEmailSeller, TokenSeller
 from seller.seller_services.section_product import SectionProduct
 from utils.access import Access, authentication_check
 
