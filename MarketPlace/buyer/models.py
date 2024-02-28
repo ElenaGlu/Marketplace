@@ -29,5 +29,5 @@ class TokenEmailBuyer(models.Model):
 
 class ShoppingCart(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    buyer = models.OneToOneField(ProfileBuyer, on_delete=models.CASCADE, primary_key=True)
+    buyer = models.OneToOneField(ProfileBuyer, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=None)

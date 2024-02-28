@@ -11,13 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='shoppingcart',
-            name='id',
-        ),
         migrations.AlterField(
             model_name='shoppingcart',
             name='buyer',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='buyer.profilebuyer'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=False, serialize=False, to='buyer.profilebuyer'),
         ),
     ]

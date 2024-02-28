@@ -4,7 +4,6 @@ import pytest
 from django.urls import reverse
 
 from config import EMAIL_1, EMAIL_2, EMAIL_3
-from seller.models import Catalog
 
 
 @pytest.mark.django_db
@@ -111,9 +110,8 @@ def test_provide_catalogs(client, fixture_catalog):
 
 @pytest.mark.django_db
 def test_selects_products_by_category(client, fixture_profile_seller, fixture_catalog_product):
-    print(Catalog.objects.all().values())
     url = reverse('buyer_selects_products_by_category')
-    data = json.dumps({"catalog": 1})
+    data = json.dumps({"catalog_id": 1})
     response = client.post(url, data, content_type='application/json')
     resp_json = response.json()
 
@@ -127,7 +125,7 @@ def test_selects_products_by_category(client, fixture_profile_seller, fixture_ca
 @pytest.mark.django_db
 def test_detail_product(client, fixture_profile_seller, fixture_catalog_product):
     url = reverse('buyer_detail_product')
-    data = json.dumps({"id": 2})
+    data = json.dumps({"product_id": 2})
     response = client.post(url, data, content_type='application/json')
     resp_json = response.json()
 

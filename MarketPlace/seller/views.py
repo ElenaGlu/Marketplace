@@ -1,4 +1,5 @@
 import json
+from typing import Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
@@ -102,35 +103,36 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
 
 
 @authentication_check
-def seller_update_profile(profile, user_data) -> HttpResponse:
+def seller_update_profile(profile_id: TokenSeller, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
-    :param profile: object ProfileSeller
+    :param profile_id: instance of object TokenSeller
     :param user_data: dict containing keys - store_name, individual_taxpayer_number, type_of_organization,
     :return: "created" (201) response code
     """
     obj_auth = Access()
-    return obj_auth.update_profile(profile, user_data, ProfileSeller, TokenSeller)
+    new_token = obj_auth.update_profile(profile_id, user_data, ProfileSeller, TokenSeller)
+    return JsonResponse(new_token, status=201, safe=False)
 
 
 @authentication_check
-def seller_load_product(profile, data) -> HttpResponse:
+def seller_load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
     """
     Uploading product information.
-    :param profile: ProfileSeller object
+    :param profile_id: instance of object TokenSeller
     :param data: dict containing keys with title_product, description, quantity, price, catalog_id
     :return: "created" (201) response code
     """
     obj_product = SectionProduct()
-    obj_product.load_product(profile, data)
+    obj_product.load_product(profile_id, data)
     return HttpResponse(status=201)
 
 
 @authentication_check
-def seller_change_product(email, data) -> HttpResponse:
+def seller_change_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
     """
     Change the data of an existing product
-    :param email: Email object
+    :param profile_id: instance of object TokenSeller
     :param data: dict containing keys - title_product, description, quantity, price, catalog_id, product_id
     :return: "created" (201) response code
     """
@@ -140,10 +142,10 @@ def seller_change_product(email, data) -> HttpResponse:
 
 
 @authentication_check
-def seller_archive_product(email, data) -> HttpResponse:
+def seller_archive_product(profile_id: TokenSeller, data: Dict[str, Union[str, int]]) -> HttpResponse:
     """
     Adding an item to the archive.
-    :param email: Email object
+    :param profile_id: instance of object TokenSeller
     :param data: dict containing keys - token, product_id
     :return: "created" (201) response code
     """

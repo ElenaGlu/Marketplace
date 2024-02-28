@@ -1,16 +1,18 @@
-from seller.models import Catalog, CatalogProduct, Product
+from typing import Dict, Union
+
+from seller.models import Catalog, CatalogProduct, Product, TokenSeller, ProfileSeller
 
 
 class SectionProduct:
     @staticmethod
-    def load_product(profile, data) -> None:
+    def load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> None:
         """
         Uploading product information.
-        :param profile: ProfileSeller object
+        :param profile_id: instance of object TokenSeller
         :param data: dict containing keys - title_product, description, quantity, price, catalog_id
         :return: None
         """
-        data['store_name_id'] = profile.id
+        data['store_name_id'] = ProfileSeller.objects.filter(id=profile_id).first().id
         catalogs = data.pop('catalog_id')
         new_product = Product.objects.create(**data)
         bulk_list = list()
@@ -22,7 +24,7 @@ class SectionProduct:
         CatalogProduct.objects.bulk_create(bulk_list)
 
     @staticmethod
-    def change_product(data) -> None:
+    def change_product(data: Dict[str, Union[str, int, list[int]]]) -> None:
         """
         Change the data of an existing product
         :param data: dict containing keys - title_product, description, quantity, price, catalog_id, product_id
@@ -42,7 +44,7 @@ class SectionProduct:
         CatalogProduct.objects.bulk_create(bulk_list)
 
     @staticmethod
-    def archive_product(data) -> None:
+    def archive_product(data: Dict[str, Union[str, int]]) -> None:
         """
         Adding an item to the archive.
         :param data: dict containing keys - token, product_id

@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
@@ -98,15 +99,16 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
 
 
 @authentication_check
-def buyer_update_profile(profile, user_data) -> HttpResponse:
+def buyer_update_profile(profile_id: TokenBuyer, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
-    :param profile: object ProfileBuyer
+    :param profile_id: instance of object TokenBuyer
     :param user_data: dict containing keys - name, surname, password
     :return: "created" (201) response code
     """
     obj_auth = Access()
-    return obj_auth.update_profile(profile, user_data, ProfileBuyer, TokenBuyer)
+    new_token = obj_auth.update_profile(profile_id, user_data, ProfileBuyer, TokenBuyer)
+    return JsonResponse(new_token, status=201, safe=False)
 
 
 def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:
@@ -134,8 +136,9 @@ def buyer_selects_products_by_category(request: HttpRequest) -> JsonResponse:
 def buyer_detail_product(request: HttpRequest) -> JsonResponse:
     """
     Detailed information about the product.
-    :param request: JSON object containing key - id
-    :return: detailed information about the product (id, description, price, quantity, store_name_id, title_product)
+    :param request: JSON object containing key - product_id
+    :return: detailed information about the product (id, description, price, quantity,
+                                                     store_name_id, title_product, active_status)
     """
     if request.method == "POST":
         obj_shop = Shop()
@@ -144,41 +147,41 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
 
 
 @authentication_check
-def buyer_add_cart(profile, data) -> HttpResponse:
+def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
-    :param profile: object ProfileBuyer
+    :param profile_id: instance of object TokenBuyer
     :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
     :raises ValueError: if the requested quantity of goods is not available
     """
     obj_shop = Shop()
-    obj_shop.add_cart(profile, data)
+    obj_shop.add_cart(profile_id, data)
     return HttpResponse(status=201)
 
 
 @authentication_check
-def buyer_change_cart(profile, data) -> HttpResponse:
+def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user changes the quantity of the product in the cart.
-    :param profile: object ProfileBuyer
+    :param profile_id: instance of object TokenBuyer
     :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
     :raises ValueError: if the requested quantity of goods is not available
     """
     obj_shop = Shop()
-    obj_shop.change_cart(profile, data)
+    obj_shop.change_cart(profile_id, data)
     return HttpResponse(status=201)
 
 
 @authentication_check
-def buyer_remove_cart(profile, data) -> HttpResponse:
+def buyer_remove_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user removes an item from the shopping cart.
-    :param profile: object ProfileBuyer
+    :param profile_id: instance of object TokenBuyer
     :param data: dict containing keys - product_id, quantity
     :return: "OK" (200) response code
     """
     obj_shop = Shop()
-    obj_shop.remove_cart(profile, data)
+    obj_shop.remove_cart(profile_id, data)
     return HttpResponse(status=200)
