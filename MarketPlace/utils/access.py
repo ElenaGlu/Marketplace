@@ -7,7 +7,9 @@ import smtplib
 from typing import Dict, Type, Union, Optional
 
 import jwt
+from django.http import HttpRequest
 
+from Exceptions import TokenError, ErrorTypes
 from buyer.models import Email, TokenBuyer
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 from seller.models import TokenSeller
@@ -18,20 +20,32 @@ def authentication_check(func):
     Check of the user's primary authorization token.
     """
 
-    def wrapper(*args):
-        request = args[0]
+    def wrapper(request: HttpRequest):
         user_data = json.loads(request.body)
         token = user_data['token']
         if TokenBuyer.objects.filter(token=token).first():
             token_type = TokenBuyer
         else:
             token_type = TokenSeller
-        stop_date = token_type.objects.filter(token=token).first().stop_date
+        token_data = token_type.objects.filter(token=token).first()
+        if not token_data:
+            raise TokenError(
+                {
+                    'error_type': ErrorTypes.TOKEN_ERROR,
+                    'description': 'the token is invalid, need to log in'
+                }
+            )
+        stop_date = token_data.stop_date
         now_date = datetime.datetime.now(datetime.timezone.utc)
         if stop_date.timestamp() > now_date.timestamp():
             profile_id = token_type.objects.filter(token=token).first().profile_id
         else:
-            raise ValueError('the token is invalid, need to log in')
+            raise TokenError(
+                {
+                    'error_type': ErrorTypes.TOKEN_ERROR,
+                    'description': 'the token is invalid, need to log in'
+                }
+            )
         del user_data['token']
         return func(profile_id, user_data)
 

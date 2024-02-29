@@ -151,6 +151,8 @@ def test_add_cart(client, fixture_shopping_cart):
          }
     )
     response = client.post(url, data, content_type='application/json')
+    # print(response.status_code)
+    # print(response.json())
     assert response.status_code == 201
 
 
