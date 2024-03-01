@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'buyer.middleware.middleware.CustomErrorMiddleware',
+    'seller.middleware.middleware.CustomErrorMiddleware',
 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

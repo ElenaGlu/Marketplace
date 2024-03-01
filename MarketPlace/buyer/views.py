@@ -55,7 +55,7 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     :param request: JSON object containing keys - email, password
     :return: application access token
     :raises AppError: if the user entered an incorrect email or password
-    :raises AppError: if the user is not registered.
+    :raises AppError: if the user is not registered
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -79,7 +79,7 @@ def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
 def buyer_reset_password(request: HttpRequest) -> HttpResponse:
     """
     Changing the password to a new one.
-    :param request: JSON object containing keys - email, password
+    :param request: JSON object containing keys - email,  new password
     :return: "created" (201) response code
     :raises AppError: if user is not registered
     """

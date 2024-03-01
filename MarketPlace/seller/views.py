@@ -18,7 +18,7 @@ def seller_register(request: HttpRequest) -> HttpResponse:
                                                   country_of_registration,
                                                   password
     :return: "created" (201) response code
-    :raises ValueError: if the user is registered in the system
+    :raises AppError: if the user is registered in the system
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -31,8 +31,8 @@ def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
     Resend the email to the specified address.
     :param request: JSON object containing key - email
     :return: "created" (201) response code
-    :raises ValueError: if the user is not registered in the system
-    :raises ValueError: if the user has already confirmed their profile
+    :raises AppError: if the user is not registered in the system
+    :raises AppError: if the user has already confirmed their profile
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -45,7 +45,8 @@ def seller_confirm_email(request) -> HttpResponse:
     Confirms the user's profile.
     :param request: url with token
     :return: "created" (201) response code
-    :raises ValueError: if the token has expired
+    :raises AppError: if email token is invalid
+    :raises AppError: if email token does not exist
     """
     obj_auth = Access()
     obj_auth.confirm_email(request.GET.get('token'), ProfileSeller, TokenEmailSeller)
@@ -57,7 +58,8 @@ def seller_login(request: HttpRequest) -> JsonResponse:
     User authorization in the system.
     :param request: JSON object containing keys - email, password
     :return: application access token
-    :raises ValueError: if the user entered an incorrect email or password
+    :raises AppError: if the user entered an incorrect email or password
+    :raises AppError: if the user is not registered
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -70,7 +72,7 @@ def seller_redirect_reset(request: HttpRequest) -> HttpResponse:
     Sends a link to the email to reset the password.
     :param request: JSON object containing key - email
     :return: "created" (201) response code
-    :raises ValueError: if the user entered an incorrect email
+    :raises AppError: if user is not registered
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -83,6 +85,7 @@ def seller_reset_password(request: HttpRequest) -> HttpResponse:
     Changing the password to a new one.
     :param request: JSON object containing keys - email, new password
     :return: "created" (201) response code
+    :raises AppError: if user is not registered
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -95,6 +98,7 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
     Authorized user logs out of the system.
     :param request: JSON object containing key - token
     :return: "OK" (200) response code
+    :raises AppError: if token does not exist
     """
     if request.method == "POST":
         obj_auth = Access()
