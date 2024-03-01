@@ -28,32 +28,32 @@ def fixture_profile_seller(fixture_email):
     password_hash = Access.create_hash('1')
     profile_seller = [
         {"id": 2,
-            "store_name": "seller",
-            "individual_taxpayer_number": "111",
-            "type_of_organization": "ИП",
-            "country_of_registration": "RU",
-            "password": password_hash,
-            "email_id": fixture_email[2].id,  # "elena.g"
-            "active_account": False
-        },
+         "store_name": "seller",
+         "individual_taxpayer_number": "111",
+         "type_of_organization": "ИП",
+         "country_of_registration": "RU",
+         "password": password_hash,
+         "email_id": fixture_email[2].id,  # "elena.g"
+         "active_account": False
+         },
         {"id": 3,
-            "store_name": "seller_2",
-            "individual_taxpayer_number": "222",
-            "type_of_organization": "ИП",
-            "country_of_registration": "RU",
-            "password": password_hash,
-            "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
-            "active_account": True
-        },
+         "store_name": "seller_2",
+         "individual_taxpayer_number": "222",
+         "type_of_organization": "ИП",
+         "country_of_registration": "RU",
+         "password": password_hash,
+         "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
+         "active_account": True
+         },
         {"id": 4,
-            "store_name": "seller_1",
-            "individual_taxpayer_number": "111",
-            "type_of_organization": "ИП",
-            "country_of_registration": "RU",
-            "password": password_hash,
-            "email_id": fixture_email[0].id,  # "seller_1@mail.ru"
-            "active_account": True
-        }
+         "store_name": "seller_1",
+         "individual_taxpayer_number": "111",
+         "type_of_organization": "ИП",
+         "country_of_registration": "RU",
+         "password": password_hash,
+         "email_id": fixture_email[0].id,  # "seller_1@mail.ru"
+         "active_account": True
+         }
     ]
     temporary = []
     for obj in profile_seller:
@@ -81,12 +81,12 @@ def fixture_product(fixture_catalog, fixture_profile_seller):
          "price": 1999,
          },
         {"id": 3,
-            "store_name_id": fixture_profile_seller[1].id,  # "seller_2"
-            "title_product": "flower",
-            "description": "ficus",
-            "quantity": 5,
-            "price": 799,
-        }
+         "store_name_id": fixture_profile_seller[1].id,  # "seller_2"
+         "title_product": "flower",
+         "description": "ficus",
+         "quantity": 5,
+         "price": 799,
+         }
     ]
     temporary = []
     for obj in product:
@@ -184,12 +184,12 @@ def fixture_token_email_seller(fixture_profile_seller):
 @pytest.fixture()
 def fixture_token_buyer(fixture_profile_buyer):
     token = [
-        {
+        {   "id": 1,
             "token": "111",
-            "profile": fixture_profile_buyer[1],  # "buyer_2@mail.ru"
+            "profile": fixture_profile_buyer[1],  # "shi"
             "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
         },
-        {
+        {"id": 2,
             "token": "222",
             "profile": fixture_profile_buyer[2],  # "buyer_1@mail.ru"
             "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
@@ -205,10 +205,10 @@ def fixture_token_buyer(fixture_profile_buyer):
 def fixture_token_seller(fixture_profile_seller):
     token = [
         {"id": 1,
-            "token": "333",
-            "profile": fixture_profile_seller[2],  # "seller_1@mail.ru"
-            "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-        }
+         "token": "333",
+         "profile": fixture_profile_seller[2],  # "seller_1@mail.ru"
+         "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+         }
     ]
     temporary = []
     for obj in token:
@@ -220,11 +220,16 @@ def fixture_token_seller(fixture_profile_seller):
 def fixture_shopping_cart(fixture_profile_buyer, fixture_product, fixture_catalog_product,
                           fixture_token_buyer):
     shopping_cart = [
-        {
-            "product_id": fixture_product[0].id,
-            "buyer_id": fixture_profile_buyer[1].id,  # "buyer_2@mail.ru"
-            "quantity": 2
-        }
+        {"id": 2,
+         "product_id": fixture_product[0].id,
+         "buyer_id": fixture_profile_buyer[1].id,  # "shi"
+         "quantity": 2
+         },
+        {"id": 3,
+         "product_id": fixture_product[0].id,
+         "buyer_id": fixture_profile_buyer[2].id,  # "buyer_1@mail.ru"
+         "quantity": 4
+         }
     ]
     temporary = []
     for obj in shopping_cart:

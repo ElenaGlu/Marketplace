@@ -9,7 +9,7 @@ from typing import Dict, Type, Union, Optional
 import jwt
 from django.http import HttpRequest
 
-from Exceptions import TokenError, ErrorTypes
+from Exceptions import AppError, ErrorType
 from buyer.models import Email, TokenBuyer
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 from seller.models import TokenSeller
@@ -25,30 +25,30 @@ def authentication_check(func):
         token = user_data['token']
         if TokenBuyer.objects.filter(token=token).first():
             token_type = TokenBuyer
-        else:
+        elif TokenSeller.objects.filter(token=token).first():
             token_type = TokenSeller
-        token_data = token_type.objects.filter(token=token).first()
-        if not token_data:
-            raise TokenError(
+        else:
+            raise AppError(
                 {
-                    'error_type': ErrorTypes.TOKEN_ERROR,
+                    'error_type': ErrorType.TOKEN_ERROR,
                     'description': 'the token is invalid, need to log in'
                 }
             )
+        token_data = token_type.objects.filter(token=token).first()
         stop_date = token_data.stop_date
         now_date = datetime.datetime.now(datetime.timezone.utc)
         if stop_date.timestamp() > now_date.timestamp():
             profile_id = token_type.objects.filter(token=token).first().profile_id
+
+            del user_data['token']
+            return func(profile_id, user_data)
         else:
-            raise TokenError(
+            raise AppError(
                 {
-                    'error_type': ErrorTypes.TOKEN_ERROR,
+                    'error_type': ErrorType.TOKEN_ERROR,
                     'description': 'the token is invalid, need to log in'
                 }
             )
-        del user_data['token']
-        return func(profile_id, user_data)
-
     return wrapper
 
 
@@ -65,13 +65,18 @@ class Access:
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
         :return: None
-        :raises ValueError: if the user is registered in the system
+        :raises AppError: if the user is registered in the system
         """
         user_email = user_data['email']
         email = Email.objects.filter(email=user_email).first()
         if email:
             if profile_type.objects.filter(email=email).first():
-                raise ValueError('the user is already registered')
+                raise AppError(
+                    {
+                        'error_type': ErrorType.REGISTRATION_ERROR,
+                        'description': 'User is already registered'
+                    }
+                )
         else:
             user_data['email'] = Email.objects.create(email=user_email)
 
@@ -90,8 +95,8 @@ class Access:
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
         :return: None
-        :raises ValueError: if the user is not registered in the system
-        :raises ValueError: if the user has already confirmed their profile
+        :raises AppError: if the user is not registered in the system
+        :raises AppError: if the user has already confirmed their profile
         """
         user_email = user_data['email']
         email = Email.objects.filter(email=user_email).first()
@@ -105,9 +110,19 @@ class Access:
                 token = data_token['token']
                 Access.send_notification([user_email], f'http://localhost/confirm/?token={token}')
             else:
-                raise ValueError('The users email has been confirmed')
+                raise AppError(
+                    {
+                        'error_type': ErrorType.REGISTRATION_ERROR,
+                        'description': 'The users email has been confirmed'
+                    }
+                )
         else:
-            raise ValueError('it is necessary to register')
+            raise AppError(
+                {
+                    'error_type': ErrorType.REGISTRATION_ERROR,
+                    'description': 'User is not registered.It is necessary to register'
+                }
+            )
 
     @staticmethod
     def confirm_email(token: str, profile_type: Type, email_token_type: Type) -> None:
@@ -117,16 +132,30 @@ class Access:
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
         :return: None
-        :raises ValueError: if the token has expired
+        :raises AppError: if email token is invalid
+        :raises AppError: if email token does not exist
         """
         obj = email_token_type.objects.filter(token=token).first().profile_id
-        stop_date = email_token_type.objects.filter(token=token).first().stop_date
-        now_date = datetime.datetime.now(datetime.timezone.utc)
-        if obj and stop_date.timestamp() > now_date.timestamp():
-            profile_type.objects.filter(id=obj).update(active_account=True)
-            email_token_type.objects.filter(token=token).first().delete()
+        if obj:
+            stop_date = email_token_type.objects.filter(token=token).first().stop_date
+            now_date = datetime.datetime.now(datetime.timezone.utc)
+            if obj and stop_date.timestamp() > now_date.timestamp():
+                profile_type.objects.filter(id=obj).update(active_account=True)
+                email_token_type.objects.filter(token=token).first().delete()
+            else:
+                raise AppError(
+                    {
+                        'error_type': ErrorType.EMAIL_TOKEN_ERROR,
+                        'description': 'Email token is invalid'
+                    }
+                )
         else:
-            raise ValueError('token is invalid')
+            raise AppError(
+                {
+                    'error_type': ErrorType.EMAIL_TOKEN_ERROR,
+                    'description': 'Email token does not exist'
+                }
+            )
 
     @staticmethod
     def login(user_data: Dict[str, str], profile_type: Type, token_type: Type) -> str:
@@ -136,29 +165,48 @@ class Access:
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
         :return: application access token
-        :raises ValueError: if the user entered an incorrect email or password
+        :raises AppError: if the user entered an incorrect email or password
+        :raises AppError: if the user is not registered.
         """
         email = Email.objects.filter(email=user_data['email']).first()
-        user = profile_type.objects.filter(email=email).first()
-        if user.active_account:
-            password_hash = Access.create_hash(user_data['password'])
-            if user.password == password_hash:
-                data_token = Access.create_token(user)
-                token_type.objects.create(**data_token)
-                return data_token['token']
+        if email:
+            user = profile_type.objects.filter(email=email).first()
+            if user.active_account:
+                password_hash = Access.create_hash(user_data['password'])
+                if user.password == password_hash:
+                    data_token = Access.create_token(user)
+                    token_type.objects.create(**data_token)
+                    return data_token['token']
+                else:
+                    raise AppError(
+                        {
+                            'error_type': ErrorType.ACCESS_ERROR,
+                            'description': 'invalid email or password'
+                        }
+                    )
             else:
-                raise ValueError('invalid username or password')
+                raise AppError(
+                    {
+                        'error_type': ErrorType.REGISTRATION_ERROR,
+                        'description': 'User is not registered.It is necessary to register'
+                    }
+                )
         else:
-            raise ValueError('user does not exist')
+            raise AppError(
+                {
+                    'error_type': ErrorType.REGISTRATION_ERROR,
+                    'description': 'User is not registered.It is necessary to register'
+                }
+            )
 
     @staticmethod
     def redirect_reset(user_data: Dict[str, str], profile_type: Type) -> None:
         """
         Sends a link to the email to reset the password
         :param user_data: dict containing key - email
-        :param profile_type:  object - ProfileBuyer or ProfileSeller
+        :param profile_type: object - ProfileBuyer or ProfileSeller
         :return: None
-        :raises ValueError: if the user entered an incorrect email
+        :raises AppError: if user is not registered
         """
         user_email = user_data['email']
         email = Email.objects.filter(email=user_email).first()
@@ -167,9 +215,19 @@ class Access:
             if profile:
                 Access.send_notification([user_email], f'link to the password change form')
             else:
-                raise ValueError('user does not exist')
+                raise AppError(
+                    {
+                        'error_type': ErrorType.REGISTRATION_ERROR,
+                        'description': 'User is not registered.It is necessary to register'
+                    }
+                )
         else:
-            raise ValueError('user does not exist')
+            raise AppError(
+                {
+                    'error_type': ErrorType.REGISTRATION_ERROR,
+                    'description': 'User is not registered.It is necessary to register'
+                }
+            )
 
     @staticmethod
     def reset_password(user_data: Dict[str, str], profile_type: Type, token_type: Type) -> None:
@@ -179,7 +237,7 @@ class Access:
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: object - TokenBuyer or TokenSeller
         :return: None
-        :raises ValueError: if the user entered an incorrect email
+        :raises AppError: if user is not registered
         """
         email = Email.objects.filter(email=user_data['email']).first()
         if email:
@@ -189,9 +247,19 @@ class Access:
                 hash_password = Access.create_hash(user_data['password'])
                 profile_type.objects.filter(email=email).update(password=hash_password)
             else:
-                raise ValueError('user does not exist')
+                raise AppError(
+                    {
+                        'error_type': ErrorType.REGISTRATION_ERROR,
+                        'description': 'User is not registered.It is necessary to register'
+                    }
+                )
         else:
-            raise ValueError('user does not exist')
+            raise AppError(
+                {
+                    'error_type': ErrorType.REGISTRATION_ERROR,
+                    'description': 'User is not registered.It is necessary to register'
+                }
+            )
 
     @staticmethod
     def logout(user_data: Dict[str, str], token_type: Type) -> None:
@@ -200,11 +268,17 @@ class Access:
         :param user_data: dict containing key - token
         :param token_type: object - TokenBuyer or TokenSeller
         :return: None
+        :raises AppError: if token does not exist
         """
         if token_type.objects.filter(token=user_data['token']).first():
             token_type.objects.filter(token=user_data['token']).delete()
         else:
-            raise ValueError('token does not exist')
+            raise AppError(
+                {
+                    'error_type': ErrorType.TOKEN_ERROR,
+                    'description': 'Token does not exist'
+                }
+            )
 
     @staticmethod
     def update_profile(

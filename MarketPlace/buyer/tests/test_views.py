@@ -3,6 +3,7 @@ import json
 import pytest
 from django.urls import reverse
 
+from buyer.models import ShoppingCart
 from config import EMAIL_1, EMAIL_2, EMAIL_3
 
 
@@ -146,13 +147,11 @@ def test_add_cart(client, fixture_shopping_cart):
     url = reverse('buyer_add_cart')
     data = json.dumps(
         {"token": "222",
-         "product_id": 2,
+         "product_id": 3,
          "quantity": 2
          }
     )
     response = client.post(url, data, content_type='application/json')
-    # print(response.status_code)
-    # print(response.json())
     assert response.status_code == 201
 
 
@@ -161,11 +160,14 @@ def test_change_cart(client, fixture_shopping_cart):
     url = reverse('buyer_change_cart')
     data = json.dumps(
         {"token": "222",
-         "product_id": 2,
+         "product_id": 3,
          "quantity": 5
          }
     )
+    s = ShoppingCart.objects.all().values()
+    print(s)
     response = client.post(url, data, content_type='application/json')
+
     assert response.status_code == 201
 
 

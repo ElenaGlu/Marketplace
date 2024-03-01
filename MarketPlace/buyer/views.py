@@ -14,7 +14,7 @@ def buyer_register(request: HttpRequest) -> HttpResponse:
     Registration of a new user in the system.
     :param request: JSON object containing keys - email, name, surname, password
     :return: "created" (201) response code
-    :raises ValueError: if the user is registered in the system
+    :raises AppError: if the user is registered in the system
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -27,8 +27,8 @@ def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
     Resend the email to the specified address.
     :param request: JSON object containing key - email
     :return: "created" (201) response code
-    :raises ValueError: if the user is not registered in the system
-    :raises ValueError: if the user has already confirmed their profile
+    :raises AppError: if the user is not registered in the system
+    :raises AppError: if the user has already confirmed their profile
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -41,7 +41,8 @@ def buyer_confirm_email(request) -> HttpResponse:
     Confirms the user's profile.
     :param request: url with token
     :return: "created" (201) response code
-    :raises ValueError: if the token has expired
+    :raises AppError: if email token is invalid
+    :raises AppError: if email token does not exist
     """
     obj_auth = Access()
     obj_auth.confirm_email(request.GET.get('token'), ProfileBuyer, TokenEmailBuyer)
@@ -53,7 +54,8 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     User authorization in the system.
     :param request: JSON object containing keys - email, password
     :return: application access token
-    :raises ValueError: if the user entered an incorrect email or password
+    :raises AppError: if the user entered an incorrect email or password
+    :raises AppError: if the user is not registered.
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -66,7 +68,7 @@ def buyer_redirect_reset(request: HttpRequest) -> HttpResponse:
     Sends a link to the email to reset the password.
     :param request: JSON object containing key - email
     :return: "created" (201) response code
-    :raises ValueError: if the user entered an incorrect email
+    :raises AppError: if user is not registered
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -79,6 +81,7 @@ def buyer_reset_password(request: HttpRequest) -> HttpResponse:
     Changing the password to a new one.
     :param request: JSON object containing keys - email, password
     :return: "created" (201) response code
+    :raises AppError: if user is not registered
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -91,6 +94,7 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
     Authorized user logs out of the system.
     :param request: JSON object containing key - token
     :return: "OK" (200) response code
+    :raises AppError: if token does not exist
     """
     if request.method == "POST":
         obj_auth = Access()
@@ -126,6 +130,7 @@ def buyer_selects_products_by_category(request: HttpRequest) -> JsonResponse:
     Selection of products included in a specific catalog.
     :param request: JSON object containing key - catalog
     :return: products (id, price, title_product) included in the catalog
+    :raises AppError: if there is no catalog with this id
     """
     if request.method == "POST":
         obj_shop = Shop()
@@ -139,6 +144,7 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
     :param request: JSON object containing key - product_id
     :return: detailed information about the product (id, description, price, quantity,
                                                      store_name_id, title_product, active_status)
+    :raises AppError: if there is no product with this id
     """
     if request.method == "POST":
         obj_shop = Shop()
@@ -153,7 +159,7 @@ def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse
     :param profile_id: instance of object TokenBuyer
     :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
-    :raises ValueError: if the requested quantity of goods is not available
+    :raises AppError: if the requested quantity of product is not available
     """
     obj_shop = Shop()
     obj_shop.add_cart(profile_id, data)
@@ -167,7 +173,7 @@ def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpRespo
     :param profile_id: instance of object TokenBuyer
     :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
-    :raises ValueError: if the requested quantity of goods is not available
+    :raises AppError: if the requested quantity of product is not available
     """
     obj_shop = Shop()
     obj_shop.change_cart(profile_id, data)
@@ -181,6 +187,7 @@ def buyer_remove_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpRespo
     :param profile_id: instance of object TokenBuyer
     :param data: dict containing keys - product_id, quantity
     :return: "OK" (200) response code
+    :raises AppError: if there is no such product in the cart
     """
     obj_shop = Shop()
     obj_shop.remove_cart(profile_id, data)
