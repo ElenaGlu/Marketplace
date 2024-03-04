@@ -245,7 +245,7 @@ class Access:
             if profile:
                 token_type.objects.filter(profile=profile).delete()
                 hash_password = Access.create_hash(user_data['password'])
-                profile_type.objects.filter(email=email).update(password=hash_password)
+                profile_type.objects.filter(email=email).update(password=hash_password, active_account=True)
             else:
                 raise AppError(
                     {

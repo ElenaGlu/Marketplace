@@ -20,7 +20,7 @@ class Shop:
             products_by_category = []
             for obj in products:
                 products_by_category.extend(
-                    list(Product.objects.filter(id=obj['product_id']).values('id', 'title_product', 'price')
+                    list(Product.objects.filter(id=obj['product_id'], active_status=True).values('id', 'title_product', 'price')
                          )
                 )
             return products_by_category
