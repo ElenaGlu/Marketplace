@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
@@ -133,26 +133,28 @@ def seller_load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int,
 
 
 @authentication_check(TokenSeller)
-def seller_change_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
+def seller_change_product(*args: Tuple[TokenSeller, Dict[str, Union[str, int, list[int]]]]) -> HttpResponse:
     """
     Change the data of an existing product
-    :param profile_id: instance of object TokenSeller
-    :param data: dict containing keys - title_product, description, quantity, price, catalog_id, product_id
+        Args:
+        param1 (TokenSeller): instance of object TokenSeller
+        param2 (Dict): dict containing keys - title_product, description, quantity, price, catalog_id, product_id.
     :return: "created" (201) response code
     """
     obj_product = SectionProduct()
-    obj_product.change_product(data)
+    obj_product.change_product(args[1])
     return HttpResponse(status=201)
 
 
 @authentication_check(TokenSeller)
-def seller_archive_product(profile_id: TokenSeller, data: Dict[str, Union[str, int]]) -> HttpResponse:
+def seller_archive_product(*args: Tuple[TokenSeller, Dict[str, Union[str, int]]]) -> HttpResponse:
     """
     Adding an item to the archive.
-    :param profile_id: instance of object TokenSeller
-    :param data: dict containing keys - token, product_id
+    Args:
+        param1 (TokenSeller): instance of object TokenSeller
+        param2 (Dict): dict containing keys - token, product_id
     :return: "created" (201) response code
     """
     obj_product = SectionProduct()
-    obj_product.archive_product(data)
+    obj_product.archive_product(args[1])
     return HttpResponse(status=201)
