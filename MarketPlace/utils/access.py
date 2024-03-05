@@ -15,41 +15,36 @@ from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
 from seller.models import TokenSeller
 
 
-def authentication_check(func):
+def authentication_check(token_type):
     """
     Check of the user's primary authorization token.
+    :param token_type: object - TokenBuyer or TokenSeller
     """
 
-    def wrapper(request: HttpRequest):
-        user_data = json.loads(request.body)
-        token = user_data['token']
-        if TokenBuyer.objects.filter(token=token).first():
-            token_type = TokenBuyer
-        elif TokenSeller.objects.filter(token=token).first():
-            token_type = TokenSeller
-        else:
-            raise AppError(
-                {
-                    'error_type': ErrorType.TOKEN_ERROR,
-                    'description': 'the token is invalid, need to log in'
-                }
-            )
-        token_data = token_type.objects.filter(token=token).first()
-        stop_date = token_data.stop_date
-        now_date = datetime.datetime.now(datetime.timezone.utc)
-        if stop_date.timestamp() > now_date.timestamp():
-            profile_id = token_type.objects.filter(token=token).first().profile_id
+    def decorator_auth_check(func):
 
-            del user_data['token']
-            return func(profile_id, user_data)
-        else:
-            raise AppError(
-                {
-                    'error_type': ErrorType.TOKEN_ERROR,
-                    'description': 'the token is invalid, need to log in'
-                }
-            )
-    return wrapper
+        def wrapper_auth_check(request: HttpRequest):
+            user_data = json.loads(request.body)
+            token = user_data['token']
+            token_data = token_type.objects.filter(token=token).first()
+            if token_data:
+                stop_date = token_data.stop_date
+                now_date = datetime.datetime.now(datetime.timezone.utc)
+                if stop_date.timestamp() > now_date.timestamp():
+                    profile_id = token_data.profile_id
+                    del user_data['token']
+                    return func(profile_id, user_data)
+            else:
+                raise AppError(
+                    {
+                        'error_type': ErrorType.TOKEN_ERROR,
+                        'description': 'the token is invalid, need to log in'
+                    }
+                )
+
+        return wrapper_auth_check
+
+    return decorator_auth_check
 
 
 class Access:

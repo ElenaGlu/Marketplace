@@ -102,7 +102,7 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=200)
 
 
-@authentication_check
+@authentication_check(TokenBuyer)
 def buyer_update_profile(profile_id: TokenBuyer, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
@@ -152,7 +152,7 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
         return JsonResponse(detail_info_product, status=200, safe=False)
 
 
-@authentication_check
+@authentication_check(TokenBuyer)
 def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
@@ -166,7 +166,7 @@ def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse
     return HttpResponse(status=201)
 
 
-@authentication_check
+@authentication_check(TokenBuyer)
 def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user changes the quantity of the product in the cart.
@@ -180,7 +180,7 @@ def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpRespo
     return HttpResponse(status=201)
 
 
-@authentication_check
+@authentication_check(TokenBuyer)
 def buyer_remove_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user removes an item from the shopping cart.

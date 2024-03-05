@@ -106,7 +106,7 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=200)
 
 
-@authentication_check
+@authentication_check(TokenSeller)
 def seller_update_profile(profile_id: TokenSeller, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
@@ -119,7 +119,7 @@ def seller_update_profile(profile_id: TokenSeller, user_data: Dict[str, str]) ->
     return JsonResponse(new_token, status=201, safe=False)
 
 
-@authentication_check
+@authentication_check(TokenSeller)
 def seller_load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
     """
     Uploading product information.
@@ -132,7 +132,7 @@ def seller_load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int,
     return HttpResponse(status=201)
 
 
-@authentication_check
+@authentication_check(TokenSeller)
 def seller_change_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
     """
     Change the data of an existing product
@@ -145,7 +145,7 @@ def seller_change_product(profile_id: TokenSeller, data: Dict[str, Union[str, in
     return HttpResponse(status=201)
 
 
-@authentication_check
+@authentication_check(TokenSeller)
 def seller_archive_product(profile_id: TokenSeller, data: Dict[str, Union[str, int]]) -> HttpResponse:
     """
     Adding an item to the archive.
