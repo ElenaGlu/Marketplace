@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import redis
+
 import config as c
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -113,3 +115,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REDIS_URL = f'redis://:{c.REDIS_PASSWORD}@{c.REDIS_HOST}:{c.REDIS_PORT}'
+
+redis_client = redis.StrictRedis(
+    host=c.REDIS_HOST,
+    port=c.REDIS_PORT,
+    db=0,
+    password=c.REDIS_PASSWORD
+)

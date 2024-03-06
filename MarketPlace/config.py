@@ -20,3 +20,7 @@ EMAIL_2 = os.getenv('EMAIL_2')
 EMAIL_3 = os.getenv('EMAIL_3')
 EMAIL_4 = os.getenv('EMAIL_4')
 
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+
