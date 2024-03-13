@@ -3,9 +3,17 @@ import datetime
 import pytest
 
 from buyer import models as b_models
-from config import EMAIL_1, EMAIL_2
+from config import EMAIL_1, EMAIL_2, TOKEN_USER_1, TOKEN_USER_2
 from seller import models as s_models
-from utils.access import Access
+from utils.access import Access, user_connection
+
+
+@pytest.fixture
+def redis_client():
+    redis_client = user_connection
+    redis_client.set(TOKEN_USER_1, '')
+    redis_client.set(TOKEN_USER_2, '')
+    return redis_client
 
 
 @pytest.fixture()
@@ -123,27 +131,27 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
 def fixture_profile_buyer(fixture_email):
     password_hash = Access.create_hash('1')
     profile_buyer = [
-        {
-            "name": "elena",
-            "surname": "test_user",
-            "password": password_hash,
-            "email_id": fixture_email[2].id,  # "elena.g"
-            "active_account": False
-        },
-        {
-            "name": "buyer_2",
-            "surname": "test",
-            "password": password_hash,
-            "email_id": fixture_email[3].id,  # "shi"
-            "active_account": True
-        },
-        {
-            "name": "buyer_1",
-            "surname": "test",
-            "password": password_hash,
-            "email_id": fixture_email[4].id,  # "buyer_1@mail.ru"
-            "active_account": True
-        }
+        {"id": 2,
+         "name": "elena",
+         "surname": "test_user",
+         "password": password_hash,
+         "email_id": fixture_email[2].id,  # "elena.g"
+         "active_account": False
+         },
+        {"id": 3,
+         "name": "buyer_2",
+         "surname": "test",
+         "password": password_hash,
+         "email_id": fixture_email[3].id,  # "shi"
+         "active_account": True
+         },
+        {"id": 4,
+         "name": "buyer_1",
+         "surname": "test",
+         "password": password_hash,
+         "email_id": fixture_email[4].id,  # "buyer_1@mail.ru"
+         "active_account": True
+         }
     ]
     temporary = []
     for obj in profile_buyer:
@@ -152,48 +160,18 @@ def fixture_profile_buyer(fixture_email):
 
 
 @pytest.fixture()
-def fixture_token_email_buyer(fixture_profile_buyer):
-    token = [
-        {
-            "token": "123",
-            "profile": fixture_profile_buyer[0],  # "elena.g"
-            "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-        }
-    ]
-    temporary = []
-    for obj in token:
-        temporary.append(b_models.TokenEmailBuyer(**obj))
-    return b_models.TokenEmailBuyer.objects.bulk_create(temporary)
-
-
-@pytest.fixture()
-def fixture_token_email_seller(fixture_profile_seller):
-    token = [
-        {
-            "token": "123",
-            "profile": fixture_profile_seller[0],  # "elena.g"
-            "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-        }
-    ]
-    temporary = []
-    for obj in token:
-        temporary.append(s_models.TokenEmailSeller(**obj))
-    return s_models.TokenEmailSeller.objects.bulk_create(temporary)
-
-
-@pytest.fixture()
 def fixture_token_buyer(fixture_profile_buyer):
     token = [
-        {   "id": 1,
-            "token": "111",
-            "profile": fixture_profile_buyer[1],  # "shi"
-            "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-        },
+        {"id": 1,
+         "token": "111",
+         "profile": fixture_profile_buyer[1],  # "shi"
+         "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+         },
         {"id": 2,
-            "token": "222",
-            "profile": fixture_profile_buyer[2],  # "buyer_1@mail.ru"
-            "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-        }
+         "token": "222",
+         "profile": fixture_profile_buyer[2],  # "buyer_1@mail.ru"
+         "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+         }
     ]
     temporary = []
     for obj in token:

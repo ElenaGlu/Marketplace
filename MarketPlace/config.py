@@ -24,3 +24,9 @@ REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 
+TOKEN_USER_1 = os.getenv('TOKEN_USER_1')
+TOKEN_USER_2 = os.getenv('TOKEN_USER_2')
+
+
+TOKEN_USER_B = os.getenv('TOKEN_USER_B')
+TOKEN_USER_S = os.getenv('TOKEN_USER_S')

@@ -21,12 +21,6 @@ class TokenBuyer(models.Model):
     stop_date = models.DateTimeField()
 
 
-class TokenEmailBuyer(models.Model):
-    profile = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
-    token = models.CharField(max_length=254)
-    stop_date = models.DateTimeField()
-
-
 class ShoppingCart(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     buyer = models.OneToOneField(ProfileBuyer, on_delete=models.CASCADE)

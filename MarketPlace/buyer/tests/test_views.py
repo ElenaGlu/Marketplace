@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 
 from buyer.models import ShoppingCart
-from config import EMAIL_1, EMAIL_2, EMAIL_3
+from config import EMAIL_1, EMAIL_2, EMAIL_3, TOKEN_USER_B
 
 
 @pytest.mark.django_db
@@ -22,7 +22,7 @@ def test_register(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
-def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email_buyer):
+def test_repeat_notification(client, fixture_profile_buyer):
     url = reverse('buyer_repeat_notification')
     data = json.dumps(
         {'email': EMAIL_1}
@@ -32,9 +32,11 @@ def test_repeat_notification(client, fixture_profile_buyer, fixture_token_email_
 
 
 @pytest.mark.django_db
-def test_confirm_email(client, fixture_profile_buyer, fixture_token_email_buyer):
+def test_confirm_email(client, fixture_profile_buyer, redis_client):
     url = reverse('buyer_confirm_email')
-    data = {"token": "123"}
+    data = {
+        "token": TOKEN_USER_B
+    }
     response = client.get(url, data)
     assert response.status_code == 201
 
@@ -181,3 +183,5 @@ def test_remove_cart(client, fixture_shopping_cart):
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200
+
+

@@ -4,7 +4,7 @@ from typing import Dict
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from buyer.buyer_services.shop import Shop
-from buyer.models import ProfileBuyer, TokenBuyer, TokenEmailBuyer
+from buyer.models import ProfileBuyer, TokenBuyer
 from seller.models import Catalog
 from utils.access import Access, authentication_check
 
@@ -18,7 +18,7 @@ def buyer_register(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        obj_auth.register(json.loads(request.body), ProfileBuyer, TokenEmailBuyer)
+        obj_auth.register(json.loads(request.body), ProfileBuyer, 'TokenEmailBuyer')
         return HttpResponse(status=201)
 
 
@@ -32,7 +32,7 @@ def buyer_repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        obj_auth.repeat_notification(json.loads(request.body), ProfileBuyer, TokenEmailBuyer)
+        obj_auth.repeat_notification(json.loads(request.body), ProfileBuyer, 'TokenEmailBuyer')
         return HttpResponse(status=201)
 
 
@@ -45,7 +45,7 @@ def buyer_confirm_email(request) -> HttpResponse:
     :raises AppError: if email token does not exist
     """
     obj_auth = Access()
-    obj_auth.confirm_email(request.GET.get('token'), ProfileBuyer, TokenEmailBuyer)
+    obj_auth.confirm_email(request.GET.get('token'), ProfileBuyer, 'TokenEmailBuyer')
     return HttpResponse(status=201)
 
 
@@ -59,7 +59,7 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        token = obj_auth.login(json.loads(request.body), ProfileBuyer, TokenBuyer)
+        token = obj_auth.login(json.loads(request.body), ProfileBuyer, 'TokenBuyer')
         return JsonResponse(token, status=200, safe=False)
 
 

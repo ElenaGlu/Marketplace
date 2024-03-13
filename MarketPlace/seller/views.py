@@ -3,7 +3,7 @@ from typing import Dict, Union, Tuple
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from seller.models import ProfileSeller, TokenEmailSeller, TokenSeller
+from seller.models import ProfileSeller, TokenSeller
 from seller.seller_services.section_product import SectionProduct
 from utils.access import Access, authentication_check
 
@@ -22,7 +22,7 @@ def seller_register(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        obj_auth.register(json.loads(request.body), ProfileSeller, TokenEmailSeller)
+        obj_auth.register(json.loads(request.body), ProfileSeller, 'TokenEmailSeller')
         return HttpResponse(status=201)
 
 
@@ -36,7 +36,7 @@ def seller_repeat_notification(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        obj_auth.repeat_notification(json.loads(request.body), ProfileSeller, TokenEmailSeller)
+        obj_auth.repeat_notification(json.loads(request.body), ProfileSeller, 'TokenEmailSeller')
         return HttpResponse(status=201)
 
 
@@ -49,7 +49,7 @@ def seller_confirm_email(request) -> HttpResponse:
     :raises AppError: if email token does not exist
     """
     obj_auth = Access()
-    obj_auth.confirm_email(request.GET.get('token'), ProfileSeller, TokenEmailSeller)
+    obj_auth.confirm_email(request.GET.get('token'), ProfileSeller, 'TokenEmailSeller')
     return HttpResponse(status=201)
 
 

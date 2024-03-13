@@ -3,7 +3,7 @@ import json
 import pytest
 from django.urls import reverse
 
-from config import EMAIL_1, EMAIL_4
+from config import EMAIL_1, EMAIL_4, TOKEN_USER_S
 
 
 @pytest.mark.django_db
@@ -22,7 +22,7 @@ def test_register(client, fixture_profile_seller):
 
 
 @pytest.mark.django_db
-def test_repeat_notification(client, fixture_profile_seller, fixture_token_email_seller):
+def test_repeat_notification(client, fixture_profile_seller):
     url = reverse('seller_repeat_notification')
     data = json.dumps({'email': EMAIL_1})
     response = client.post(url, data, content_type='application/json')
@@ -30,9 +30,11 @@ def test_repeat_notification(client, fixture_profile_seller, fixture_token_email
 
 
 @pytest.mark.django_db
-def test_confirm_email(client, fixture_profile_seller, fixture_token_email_seller):
+def test_confirm_email(client, fixture_profile_seller, redis_client):
     url = reverse('seller_confirm_email')
-    data = {"token": "123"}
+    data = {
+        "token": TOKEN_USER_S
+    }
     response = client.get(url, data)
     assert response.status_code == 201
 

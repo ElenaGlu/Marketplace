@@ -11,8 +11,12 @@ from django.http import HttpRequest
 
 from Exceptions import AppError, ErrorType
 from buyer.models import Email, TokenBuyer
-from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD
+from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD, REDIS_HOST, REDIS_PORT
 from seller.models import TokenSeller
+
+import redis
+
+user_connection = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 
 
 def authentication_check(token_type):
@@ -53,12 +57,12 @@ class Access:
     """
 
     @staticmethod
-    def register(user_data: Dict[str, str], profile_type: Type, email_token_type: Type) -> None:
+    def register(user_data: Dict[str, str], profile_type: Type, token_email_type: str) -> None:
         """
         Registration of a new user in the system.
         :param user_data: dict containing keys - email, password, (name, surname,)
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
+        :param token_email_type: str - TokenEmailBuyer or TokenEmailSeller
         :return: None
         :raises AppError: if the user is registered in the system
         """
@@ -76,19 +80,19 @@ class Access:
             user_data['email'] = Email.objects.create(email=user_email)
 
         user_data['password'] = Access.create_hash(user_data['password'])
-        data_token = Access.create_token(profile_type.objects.create(**user_data))
-        email_token_type.objects.create(**data_token)
-
-        token = data_token['token']
+        new_user = profile_type.objects.create(**user_data).id
+        data_token = Access.redis_create_token(new_user, token_email_type)
+        user_connection.setex(data_token, 86400, '')
+        token = data_token.split(":")[2]
         Access.send_notification([user_email], f'http://localhost/confirm/?token={token}')
 
     @staticmethod
-    def repeat_notification(user_data: Dict[str, str], profile_type: Type, email_token_type: Type) -> None:
+    def repeat_notification(user_data: Dict[str, str], profile_type: Type, token_email_type: str) -> None:
         """
         Resend the email to the specified address.
         :param user_data: dict containing key - email
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
+        :param token_email_type: str: str - TokenEmailBuyer or TokenEmailSeller
         :return: None
         :raises AppError: if the user is not registered in the system
         :raises AppError: if the user has already confirmed their profile
@@ -98,11 +102,10 @@ class Access:
         if email:
             activate = profile_type.objects.filter(email=email).first().active_account
             if not activate:
-                profile = profile_type.objects.filter(email=email).first()
-                data_token = Access.create_token(profile)
-                email_token_type.objects.filter(profile=profile).update(**data_token)
-
-                token = data_token['token']
+                profile = profile_type.objects.filter(email=email).first().id
+                data_token = Access.redis_create_token(profile, token_email_type)
+                user_connection.setex(data_token, 86400, '')
+                token = data_token.split(":")[2]
                 Access.send_notification([user_email], f'http://localhost/confirm/?token={token}')
             else:
                 raise AppError(
@@ -120,45 +123,35 @@ class Access:
             )
 
     @staticmethod
-    def confirm_email(token: str, profile_type: Type, email_token_type: Type) -> None:
+    def confirm_email(token: str, profile_type: Type, token_email_type: str) -> None:
         """
         Confirms the user's profile.
         :param token: string with token
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param email_token_type: object - TokenEmailBuyer or TokenEmailSeller
+        :param token_email_type: str: str - TokenEmailBuyer or TokenEmailSeller
         :return: None
         :raises AppError: if email token is invalid
         :raises AppError: if email token does not exist
         """
-        obj = email_token_type.objects.filter(token=token).first().profile_id
-        if obj:
-            stop_date = email_token_type.objects.filter(token=token).first().stop_date
-            now_date = datetime.datetime.now(datetime.timezone.utc)
-            if obj and stop_date.timestamp() > now_date.timestamp():
-                profile_type.objects.filter(id=obj).update(active_account=True)
-                email_token_type.objects.filter(token=token).first().delete()
-            else:
-                raise AppError(
+        token_user = user_connection.keys(pattern=f"*:{token_email_type}:{token}")[0]
+        if token_user:
+            id_user = token_user.split(":")
+            profile_type.objects.filter(id=id_user[0]).update(active_account=True)
+        else:
+            raise AppError(
                     {
                         'error_type': ErrorType.EMAIL_TOKEN_ERROR,
                         'description': 'Email token is invalid'
                     }
                 )
-        else:
-            raise AppError(
-                {
-                    'error_type': ErrorType.EMAIL_TOKEN_ERROR,
-                    'description': 'Email token does not exist'
-                }
-            )
 
     @staticmethod
-    def login(user_data: Dict[str, str], profile_type: Type, token_type: Type) -> str:
+    def login(user_data: Dict[str, str], profile_type: Type, token_type: str) -> str:
         """
         User authorization in the system.
         :param user_data: dict containing keys - email, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_type: object - TokenBuyer or TokenSeller
+        :param token_type: str - TokenBuyer or TokenSeller
         :return: application access token
         :raises AppError: if the user entered an incorrect email or password
         :raises AppError: if the user is not registered.
@@ -169,21 +162,21 @@ class Access:
             if user.active_account:
                 password_hash = Access.create_hash(user_data['password'])
                 if user.password == password_hash:
-                    data_token = Access.create_token(user)
-                    token_type.objects.create(**data_token)
-                    return data_token['token']
+                    data_token = Access.redis_create_token(user.id, token_type)
+                    user_connection.setex(data_token, 86400, '')
+                    return data_token.split(":")[2]
                 else:
                     raise AppError(
                         {
                             'error_type': ErrorType.ACCESS_ERROR,
-                            'description': 'invalid email or password'
+                            'description': 'Invalid email or password'
                         }
                     )
             else:
                 raise AppError(
                     {
                         'error_type': ErrorType.REGISTRATION_ERROR,
-                        'description': 'User is not registered.It is necessary to register'
+                        'description': 'The users account has not been activated. Confirm your email'
                     }
                 )
         else:
@@ -305,6 +298,18 @@ class Access:
             Access.send_notification([email], f'')
             return new_token['token']
         return None
+
+    @staticmethod
+    def redis_create_token(id_user, token_type):
+        """
+        The function is under revision.
+        """
+        stop_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+        payload = {"sub": "admin",
+                   "exp": stop_date
+                   }
+        token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
+        return f"{id_user}:{token_type}:{token}"
 
     @staticmethod
     def create_token(profile_id: Union[TokenBuyer, TokenSeller]) -> dict:
