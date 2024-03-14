@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 import smtplib
-from typing import Dict, Type, Union, Optional
+from typing import Dict, Type, Union
 
 import jwt
 from django.http import HttpRequest
@@ -19,25 +19,21 @@ import redis
 user_connection = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 
 
-def authentication_check(token_type):
+def authentication_check(token_type: str):
     """
     Check of the user's primary authorization token.
-    :param token_type: object - TokenBuyer or TokenSeller
+    :param token_type: 'TokenBuyer' or 'TokenSeller'
     """
 
     def decorator_auth_check(func):
 
         def wrapper_auth_check(request: HttpRequest):
             user_data = json.loads(request.body)
-            token = user_data['token']
-            token_data = token_type.objects.filter(token=token).first()
-            if token_data:
-                stop_date = token_data.stop_date
-                now_date = datetime.datetime.now(datetime.timezone.utc)
-                if stop_date.timestamp() > now_date.timestamp():
-                    profile_id = token_data.profile_id
-                    del user_data['token']
-                    return func(profile_id, user_data)
+            token_user = user_connection.keys(pattern=f"*:{token_type}:{user_data['token']}")[0]
+            if token_user:
+                profile_id = token_user.split(":")[0]
+                del user_data['token']
+                return func(profile_id, user_data)
             else:
                 raise AppError(
                     {
@@ -62,7 +58,7 @@ class Access:
         Registration of a new user in the system.
         :param user_data: dict containing keys - email, password, (name, surname,)
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_email_type: str - TokenEmailBuyer or TokenEmailSeller
+        :param token_email_type: 'TokenEmailBuyer' or 'TokenEmailSeller'
         :return: None
         :raises AppError: if the user is registered in the system
         """
@@ -92,7 +88,7 @@ class Access:
         Resend the email to the specified address.
         :param user_data: dict containing key - email
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_email_type: str: str - TokenEmailBuyer or TokenEmailSeller
+        :param token_email_type: 'TokenEmailBuyer' or 'TokenEmailSeller'
         :return: None
         :raises AppError: if the user is not registered in the system
         :raises AppError: if the user has already confirmed their profile
@@ -128,10 +124,9 @@ class Access:
         Confirms the user's profile.
         :param token: string with token
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_email_type: str: str - TokenEmailBuyer or TokenEmailSeller
+        :param token_email_type: 'TokenEmailBuyer' or 'TokenEmailSeller'
         :return: None
         :raises AppError: if email token is invalid
-        :raises AppError: if email token does not exist
         """
         token_user = user_connection.keys(pattern=f"*:{token_email_type}:{token}")[0]
         if token_user:
@@ -139,11 +134,11 @@ class Access:
             profile_type.objects.filter(id=id_user[0]).update(active_account=True)
         else:
             raise AppError(
-                    {
-                        'error_type': ErrorType.EMAIL_TOKEN_ERROR,
-                        'description': 'Email token is invalid'
-                    }
-                )
+                {
+                    'error_type': ErrorType.EMAIL_TOKEN_ERROR,
+                    'description': 'Email token is invalid'
+                }
+            )
 
     @staticmethod
     def login(user_data: Dict[str, str], profile_type: Type, token_type: str) -> str:
@@ -151,10 +146,11 @@ class Access:
         User authorization in the system.
         :param user_data: dict containing keys - email, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_type: str - TokenBuyer or TokenSeller
+        :param token_type: 'TokenBuyer' or 'TokenSeller'
         :return: application access token
         :raises AppError: if the user entered an incorrect email or password
-        :raises AppError: if the user is not registered.
+        :raises AppError: if the user's account has not been activated
+        :raises AppError: if the user is not registered
         """
         email = Email.objects.filter(email=user_data['email']).first()
         if email:
@@ -163,7 +159,7 @@ class Access:
                 password_hash = Access.create_hash(user_data['password'])
                 if user.password == password_hash:
                     data_token = Access.redis_create_token(user.id, token_type)
-                    user_connection.setex(data_token, 86400, '')
+                    user_connection.setex(data_token, 2419200, '')
                     return data_token.split(":")[2]
                 else:
                     raise AppError(
@@ -218,20 +214,21 @@ class Access:
             )
 
     @staticmethod
-    def reset_password(user_data: Dict[str, str], profile_type: Type, token_type: Type) -> None:
+    def reset_password(user_data: Dict[str, str], profile_type: Type, token_type: str) -> None:
         """
         Changing the password to a new one
         :param user_data: dict containing keys - email, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_type: object - TokenBuyer or TokenSeller
+        :param token_type: 'TokenBuyer' or 'TokenSeller'
         :return: None
         :raises AppError: if user is not registered
         """
         email = Email.objects.filter(email=user_data['email']).first()
         if email:
-            profile = profile_type.objects.filter(email=email).first()
+            profile = profile_type.objects.filter(email=email).first().id
             if profile:
-                token_type.objects.filter(profile=profile).delete()
+                for key in user_connection.scan_iter(f"{profile}:{token_type}:*"):
+                    user_connection.delete(key)
                 hash_password = Access.create_hash(user_data['password'])
                 profile_type.objects.filter(email=email).update(password=hash_password, active_account=True)
             else:
@@ -250,83 +247,96 @@ class Access:
             )
 
     @staticmethod
-    def logout(user_data: Dict[str, str], token_type: Type) -> None:
+    def logout(user_data: Dict[str, str], token_type: str) -> None:
         """
         Authorized user logs out of the system.
         :param user_data: dict containing key - token
-        :param token_type: object - TokenBuyer or TokenSeller
+        :param token_type: 'TokenBuyer' or 'TokenSeller'
         :return: None
-        :raises AppError: if token does not exist
         """
-        if token_type.objects.filter(token=user_data['token']).first():
-            token_type.objects.filter(token=user_data['token']).delete()
-        else:
-            raise AppError(
-                {
-                    'error_type': ErrorType.TOKEN_ERROR,
-                    'description': 'Token does not exist'
-                }
-            )
+        user_connection.delete(f"*:{token_type}:{user_data['token']}")
 
     @staticmethod
     def update_profile(
             profile_id: Union[TokenBuyer, TokenSeller],
             user_data: Dict[str, str],
             profile_type: Type,
-            token_type: Type
-    ) -> Optional[str]:
+            token_type: str
+    ) -> None:
         """
         Authorized user changes his profile data.
         :param profile_id: instance of object TokenBuyer or TokenSeller
         :param user_data: dict containing keys - name, surname, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
-        :param token_type: object - TokenBuyer or TokenSeller
-        :return: new token or None
+        :param token_type: 'TokenBuyer' or 'TokenSeller'
+        :return: None
         """
+        user = profile_type.objects.filter(id=profile_id)
         if 'password' not in user_data:
-            profile_type.objects.filter(id=profile_id).update(**user_data)
+            user.update(**user_data)
         else:
             user_data['password'] = Access.create_hash(user_data['password'])
-            new_token = Access.create_token(profile_id)
-            token_type.objects.filter(profile=profile_id).delete()
-            token_type.objects.update(**new_token)
+            for key in user_connection.scan_iter(f"{user.id}:{token_type}:*"):
+                user_connection.delete(key)
+            user.update(**user_data, active_account=False)
 
-            profile_type.objects.filter(id=profile_id).update(**user_data, active_account=False)
-            email = list(profile_type.objects.filter(id=profile_id).values('email'))[0]['email']
+            new_token = Access.redis_create_token(profile_id, token_type)
+            user_connection.setex(new_token, 86400, '')
+            token = new_token.split(":")[2]
+
+            email = list(user.values('email'))[0]['email']
             email = list(Email.objects.filter(id=email).values('email'))[0]['email']
+            Access.send_notification([email], f'http://localhost/update/?token={token}')
 
-            Access.send_notification([email], f'')
-            return new_token['token']
-        return None
+    @staticmethod
+    def update_password(token: str, profile_type: Type, token_type: str) -> None:
+        """
+        Confirms the user's profile.
+        :param token: string with token
+        :param profile_type: object - ProfileBuyer or ProfileSeller
+        :param token_type: 'ProfileBuyer' or 'ProfileBuyer'
+        :return: None
+        :raises AppError: if token is invalid
+        """
+        token_user = user_connection.keys(pattern=f"*:{token_type}:{token}")[0]
+        if token_user:
+            id_user = token_user.split(":")
+            profile_type.objects.filter(id=id_user[0]).update(active_account=True)
+        else:
+            raise AppError(
+                {
+                    'error_type': ErrorType.EMAIL_TOKEN_ERROR,
+                    'description': 'The token is invalid'
+                }
+            )
 
     @staticmethod
     def redis_create_token(id_user, token_type):
         """
         The function is under revision.
         """
-        stop_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
         payload = {"sub": "admin",
-                   "exp": stop_date
+                   "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
                    }
         token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
         return f"{id_user}:{token_type}:{token}"
 
-    @staticmethod
-    def create_token(profile_id: Union[TokenBuyer, TokenSeller]) -> dict:
-        """
-        JWT token generation
-        :param profile_id: instance of object TokenBuyer or TokenSeller
-        :return: dict with a token and its expiration date
-        :return: example {"profile": obj, "token": "12345", "stop_date": 2023-12-27 10:37:08.84}
-        """
-        stop_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-        payload = {"sub": "admin",
-                   "exp": stop_date
-                   }
-        return {'profile': profile_id,
-                'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"),
-                'stop_date': stop_date
-                }
+    # @staticmethod
+    # def create_token(profile_id: Union[TokenBuyer, TokenSeller]) -> dict:
+    #     """
+    #     JWT token generation
+    #     :param profile_id: instance of object TokenBuyer or TokenSeller
+    #     :return: dict with a token and its expiration date
+    #     :return: example {"profile": obj, "token": "12345", "stop_date": 2023-12-27 10:37:08.84}
+    #     """
+    #     stop_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+    #     payload = {"sub": "admin",
+    #                "exp": stop_date
+    #                }
+    #     return {'profile': profile_id,
+    #             'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"),
+    #             'stop_date': stop_date
+    #             }
 
     @staticmethod
     def create_hash(password: str, salt=os.urandom(32)) -> str:

@@ -42,7 +42,6 @@ def buyer_confirm_email(request) -> HttpResponse:
     :param request: url with token
     :return: "created" (201) response code
     :raises AppError: if email token is invalid
-    :raises AppError: if email token does not exist
     """
     obj_auth = Access()
     obj_auth.confirm_email(request.GET.get('token'), ProfileBuyer, 'TokenEmailBuyer')
@@ -55,6 +54,7 @@ def buyer_login(request: HttpRequest) -> JsonResponse:
     :param request: JSON object containing keys - email, password
     :return: application access token
     :raises AppError: if the user entered an incorrect email or password
+    :raises AppError: if the user's account has not been activated
     :raises AppError: if the user is not registered
     """
     if request.method == "POST":
@@ -85,7 +85,7 @@ def buyer_reset_password(request: HttpRequest) -> HttpResponse:
     """
     if request.method == "POST":
         obj_auth = Access()
-        obj_auth.reset_password(json.loads(request.body), ProfileBuyer, TokenBuyer)
+        obj_auth.reset_password(json.loads(request.body), ProfileBuyer, 'TokenBuyer')
         return HttpResponse(status=201)
 
 
@@ -94,15 +94,14 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
     Authorized user logs out of the system.
     :param request: JSON object containing key - token
     :return: "OK" (200) response code
-    :raises AppError: if token does not exist
     """
     if request.method == "POST":
         obj_auth = Access()
-        obj_auth.logout(json.loads(request.body), TokenBuyer)
+        obj_auth.logout(json.loads(request.body), 'TokenBuyer')
         return HttpResponse(status=200)
 
 
-@authentication_check(TokenBuyer)
+@authentication_check('TokenBuyer')
 def buyer_update_profile(profile_id: TokenBuyer, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
@@ -111,8 +110,20 @@ def buyer_update_profile(profile_id: TokenBuyer, user_data: Dict[str, str]) -> H
     :return: "created" (201) response code
     """
     obj_auth = Access()
-    new_token = obj_auth.update_profile(profile_id, user_data, ProfileBuyer, TokenBuyer)
-    return JsonResponse(new_token, status=201, safe=False)
+    obj_auth.update_profile(profile_id, user_data, ProfileBuyer, 'TokenBuyer')
+    return HttpResponse(status=201)
+
+
+def buyer_update_pwd(request) -> HttpResponse:
+    """
+    Confirmation of password change.
+    :param request: url with token
+    :return: "created" (201) response code
+    :raises AppError: if token is invalid
+    """
+    obj_auth = Access()
+    obj_auth.update_password(request.GET.get('token'), ProfileBuyer, 'TokenBuyer')
+    return HttpResponse(status=201)
 
 
 def buyer_provide_catalogs(request: HttpRequest) -> JsonResponse:
@@ -152,7 +163,7 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
         return JsonResponse(detail_info_product, status=200, safe=False)
 
 
-@authentication_check(TokenBuyer)
+@authentication_check('TokenBuyer')
 def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
@@ -166,7 +177,7 @@ def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse
     return HttpResponse(status=201)
 
 
-@authentication_check(TokenBuyer)
+@authentication_check('TokenBuyer')
 def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user changes the quantity of the product in the cart.
@@ -180,7 +191,7 @@ def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpRespo
     return HttpResponse(status=201)
 
 
-@authentication_check(TokenBuyer)
+@authentication_check('TokenBuyer')
 def buyer_remove_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user removes an item from the shopping cart.

@@ -3,7 +3,8 @@ import datetime
 import pytest
 
 from buyer import models as b_models
-from config import EMAIL_1, EMAIL_2, TOKEN_USER_1, TOKEN_USER_2
+from config import EMAIL_1, EMAIL_2, TOKEN_USER_1, TOKEN_USER_2, TOKEN_MAIN_B, TOKEN_MAIN_4, \
+    TOKEN_MAIN_S4, VALID_TOKEN_B, VALID_TOKEN_S
 from seller import models as s_models
 from utils.access import Access, user_connection
 
@@ -13,6 +14,11 @@ def redis_client():
     redis_client = user_connection
     redis_client.set(TOKEN_USER_1, '')
     redis_client.set(TOKEN_USER_2, '')
+    redis_client.set(TOKEN_MAIN_B, '')
+    redis_client.set(TOKEN_MAIN_4, '')
+    redis_client.set(TOKEN_MAIN_S4, '')
+    redis_client.set(VALID_TOKEN_B, '')
+    redis_client.set(VALID_TOKEN_S, '')
     return redis_client
 
 
@@ -21,8 +27,8 @@ def fixture_email():
     email = [
         "seller_1@mail.ru",
         "seller_2@mail.ru",
-        EMAIL_1,
-        EMAIL_2,
+        EMAIL_1,             # "elena.g"
+        EMAIL_2,             # 'shi3'
         "buyer_1@mail.ru"
     ]
     temporary = []
@@ -142,7 +148,7 @@ def fixture_profile_buyer(fixture_email):
          "name": "buyer_2",
          "surname": "test",
          "password": password_hash,
-         "email_id": fixture_email[3].id,  # "shi"
+         "email_id": fixture_email[3].id,  # "shi3"
          "active_account": True
          },
         {"id": 4,
@@ -164,7 +170,7 @@ def fixture_token_buyer(fixture_profile_buyer):
     token = [
         {"id": 1,
          "token": "111",
-         "profile": fixture_profile_buyer[1],  # "shi"
+         "profile": fixture_profile_buyer[1],  # "shi3"
          "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
          },
         {"id": 2,

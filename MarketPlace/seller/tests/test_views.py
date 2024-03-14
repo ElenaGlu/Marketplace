@@ -3,7 +3,7 @@ import json
 import pytest
 from django.urls import reverse
 
-from config import EMAIL_1, EMAIL_4, TOKEN_USER_S
+from config import EMAIL_1, EMAIL_4, TOKEN_USER_S, TOKEN_MAIN_S, VALID_TOKEN_S4
 
 
 @pytest.mark.django_db
@@ -71,18 +71,22 @@ def test_reset_password(client, fixture_profile_seller):
 
 
 @pytest.mark.django_db
-def test_logout(client, fixture_token_seller):
+def test_logout(client, fixture_profile_seller, redis_client):
     url = reverse('seller_logout')
-    data = json.dumps({'token': '333'})
+    data = json.dumps(
+        {
+            'token': TOKEN_MAIN_S
+        }
+    )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_update_profile(client, fixture_token_seller):
+def test_update_profile(client, fixture_profile_seller, redis_client):
     url = reverse('seller_update_profile')
     data = json.dumps({
-        'token': '333',
+        'token': VALID_TOKEN_S4,
         'store_name': 'new_seller',
         'individual_taxpayer_number': '222',
         'password': 'pwd'

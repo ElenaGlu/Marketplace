@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 
 from buyer.models import ShoppingCart
-from config import EMAIL_1, EMAIL_2, EMAIL_3, TOKEN_USER_B
+from config import EMAIL_1, EMAIL_2, EMAIL_3, TOKEN_USER_B, TOKEN_MAIN_B4, VALID_TOKEN_B4
 
 
 @pytest.mark.django_db
@@ -66,7 +66,7 @@ def test_redirect_reset(client, fixture_profile_buyer):
 def test_reset_password(client, fixture_profile_buyer):
     url = reverse('buyer_reset_password')
     data = json.dumps(
-        {'email': EMAIL_1,
+        {'email': EMAIL_2,
          'password': '2'
          }
     )
@@ -75,20 +75,22 @@ def test_reset_password(client, fixture_profile_buyer):
 
 
 @pytest.mark.django_db
-def test_logout(client, fixture_token_buyer):
+def test_logout(client, fixture_profile_buyer, redis_client):
     url = reverse('buyer_logout')
     data = json.dumps(
-        {'token': '111'}
+        {
+            'token': TOKEN_MAIN_B4
+        }
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_update_profile(client, fixture_token_buyer):
+def test_update_profile(client, fixture_profile_buyer, redis_client):
     url = reverse('buyer_update_profile')
     data = json.dumps(
-        {'token': '111',
+        {'token': VALID_TOKEN_B4,
          'name': 'new',
          'surname': 'new',
          'password': 'pwd'
