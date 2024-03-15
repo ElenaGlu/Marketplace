@@ -1,7 +1,7 @@
 from typing import Dict
 
 from Exceptions import AppError, ErrorType
-from buyer.models import ProfileBuyer, ShoppingCart
+from buyer.models import ShoppingCart
 from seller.models import CatalogProduct, Product
 
 
