@@ -16,12 +16,6 @@ class ProfileSeller(models.Model):
     active_account = models.BooleanField(default=False)
 
 
-class TokenSeller(models.Model):
-    profile = models.ForeignKey(ProfileSeller, on_delete=models.CASCADE)
-    token = models.CharField(max_length=254)
-    stop_date = models.DateTimeField()
-
-
 class Catalog(models.Model):
     title_catalog = models.CharField(max_length=100)
 

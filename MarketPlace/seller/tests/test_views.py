@@ -97,10 +97,10 @@ def test_update_profile(client, fixture_profile_seller, redis_client):
 
 
 @pytest.mark.django_db
-def test_load_product(client, fixture_token_seller, fixture_catalog_product):
+def test_load_product(client, fixture_catalog_product, redis_client):
     url = reverse('seller_load_product')
     data = json.dumps(
-        {'token': '333',  # "seller_1@mail.ru"
+        {'token': VALID_TOKEN_S4,
          'title_product': 'bed',
          'description': 'double bed',
          'quantity': 6,
@@ -113,10 +113,10 @@ def test_load_product(client, fixture_token_seller, fixture_catalog_product):
 
 
 @pytest.mark.django_db
-def test_change_product(client, fixture_token_seller, fixture_catalog_product):
+def test_change_product(client, fixture_catalog_product, redis_client):
     url = reverse('seller_change_product')
     data = json.dumps(
-        {'token': '333',  # "seller_1@mail.ru"
+        {'token': VALID_TOKEN_S4,
          'quantity': 5,
          'price': 10000,
          'catalog_id': [1],
@@ -128,10 +128,10 @@ def test_change_product(client, fixture_token_seller, fixture_catalog_product):
 
 
 @pytest.mark.django_db
-def test_archive_product(client, fixture_token_seller, fixture_catalog_product):
+def test_archive_product(client, fixture_catalog_product, redis_client):
     url = reverse('seller_archive_product')
     data = json.dumps(
-        {'token': '333',  # "seller_1@mail.ru"
+        {'token': VALID_TOKEN_S4,
          'product_id': 1
          }
     )

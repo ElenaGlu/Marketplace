@@ -165,24 +165,24 @@ def fixture_profile_buyer(fixture_email):
     return b_models.ProfileBuyer.objects.bulk_create(temporary)
 
 
-@pytest.fixture()
-def fixture_token_buyer(fixture_profile_buyer):
-    token = [
-        {"id": 1,
-         "token": "111",
-         "profile": fixture_profile_buyer[1],  # "shi3"
-         "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-         },
-        {"id": 2,
-         "token": "222",
-         "profile": fixture_profile_buyer[2],  # "buyer_1@mail.ru"
-         "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-         }
-    ]
-    temporary = []
-    for obj in token:
-        temporary.append(b_models.TokenBuyer(**obj))
-    return b_models.TokenBuyer.objects.bulk_create(temporary)
+# @pytest.fixture()
+# def fixture_token_buyer(fixture_profile_buyer):
+#     token = [
+#         {"id": 1,
+#          "token": "111",
+#          "profile": fixture_profile_buyer[1],  # "shi3"
+#          "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+#          },
+#         {"id": 2,
+#          "token": "222",
+#          "profile": fixture_profile_buyer[2],  # "buyer_1@mail.ru"
+#          "stop_date": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+#          }
+#     ]
+#     temporary = []
+#     for obj in token:
+#         temporary.append(b_models.TokenBuyer(**obj))
+#     return b_models.TokenBuyer.objects.bulk_create(temporary)
 
 
 @pytest.fixture()
@@ -201,8 +201,7 @@ def fixture_token_seller(fixture_profile_seller):
 
 
 @pytest.fixture()
-def fixture_shopping_cart(fixture_profile_buyer, fixture_product, fixture_catalog_product,
-                          fixture_token_buyer):
+def fixture_shopping_cart(fixture_profile_buyer, fixture_product, fixture_catalog_product):
     shopping_cart = [
         {"id": 2,
          "product_id": fixture_product[0].id,

@@ -1,7 +1,7 @@
 from typing import Dict
 
 from Exceptions import AppError, ErrorType
-from buyer.models import ProfileBuyer, ShoppingCart, TokenBuyer
+from buyer.models import ProfileBuyer, ShoppingCart
 from seller.models import CatalogProduct, Product
 
 
@@ -53,15 +53,15 @@ class Shop:
             )
 
     @staticmethod
-    def add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> None:
+    def add_cart(profile_id: int, data: Dict[str, int]) -> None:
         """
         Authorized user adds the item to the shopping cart for further buying.
-        :param profile_id: instance of object TokenBuyer
+        :param profile_id:
         :param data: dict containing keys - product_id, quantity
         :return: None
         :raises AppError: if the requested quantity of product is not available
         """
-        data['buyer'] = ProfileBuyer.objects.filter(id=profile_id).first()
+        data['buyer_id'] = profile_id
         order = data['quantity']
         available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
         if 0 < order <= available_quantity:
@@ -75,19 +75,19 @@ class Shop:
             )
 
     @staticmethod
-    def change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> None:
+    def change_cart(profile_id: int, data: Dict[str, int]) -> None:
         """
         Authorized user changes the quantity of the product in the cart.
-        :param profile_id: instance of object TokenBuyer
+        :param profile_id:
         :param data: dict containing keys - product_id, quantity
         :return: None
         :raises AppError: if the requested quantity of product is not available
         """
-        data['buyer'] = ProfileBuyer.objects.filter(id=profile_id).first()
+        data['buyer_id'] = profile_id
         order = data['quantity']
         available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
         if 0 < order <= available_quantity:
-            ShoppingCart.objects.update_or_create(**data)
+            ShoppingCart.objects.update(**data)
         else:
             raise AppError(
                 {
@@ -97,18 +97,17 @@ class Shop:
             )
 
     @staticmethod
-    def remove_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> None:
+    def remove_cart(profile_id: int, data: Dict[str, int]) -> None:
         """
         Authorized user removes an item from the shopping cart.
-        :param profile_id: instance of object TokenBuyer
+        :param profile_id:
         :param data: dict containing key - product_id
         :return: None
         :raises AppError: if there is no such product in the cart
         """
-        buyer = ProfileBuyer.objects.filter(id=profile_id).first()
-        cart = list(ShoppingCart.objects.filter(buyer=buyer, product_id=data["product_id"]).values())
+        cart = list(ShoppingCart.objects.filter(buyer_id=profile_id, product_id=data["product_id"]).values())
         if cart:
-            ShoppingCart.objects.filter(buyer=buyer, product_id=data["product_id"]).delete()
+            ShoppingCart.objects.filter(buyer_id=profile_id, product_id=data["product_id"]).delete()
         else:
             raise AppError(
                 {

@@ -15,13 +15,7 @@ class ProfileBuyer(models.Model):
     active_account = models.BooleanField(default=False)
 
 
-class TokenBuyer(models.Model):
-    profile = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
-    token = models.CharField(max_length=254)
-    stop_date = models.DateTimeField()
-
-
 class ShoppingCart(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    buyer = models.OneToOneField(ProfileBuyer, on_delete=models.CASCADE)
+    buyer = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()

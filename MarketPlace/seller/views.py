@@ -3,7 +3,7 @@ from typing import Dict, Union, Tuple
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from seller.models import ProfileSeller, TokenSeller
+from seller.models import ProfileSeller
 from seller.seller_services.section_product import SectionProduct
 from utils.access import Access, authentication_check
 
@@ -106,10 +106,10 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
 
 
 @authentication_check('TokenSeller')
-def seller_update_profile(profile_id: TokenSeller, user_data: Dict[str, str]) -> HttpResponse:
+def seller_update_profile(profile_id: int, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
-    :param profile_id: instance of object TokenSeller
+    :param profile_id:
     :param user_data: dict containing keys - store_name, individual_taxpayer_number, type_of_organization,
     :return: "created" (201) response code
     """
@@ -131,10 +131,10 @@ def seller_update_pwd(request) -> HttpResponse:
 
 
 @authentication_check('TokenSeller')
-def seller_load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
+def seller_load_product(profile_id: int, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
     """
     Uploading product information.
-    :param profile_id: instance of object TokenSeller
+    :param profile_id:
     :param data: dict containing keys with title_product, description, quantity, price, catalog_id
     :return: "created" (201) response code
     """
@@ -144,11 +144,11 @@ def seller_load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int,
 
 
 @authentication_check('TokenSeller')
-def seller_change_product(*args: Tuple[TokenSeller, Dict[str, Union[str, int, list[int]]]]) -> HttpResponse:
+def seller_change_product(*args: Tuple[int, Dict[str, Union[str, int, list[int]]]]) -> HttpResponse:
     """
     Change the data of an existing product
         Args:
-        param1 (TokenSeller): instance of object TokenSeller
+        param1 (TokenSeller):
         param2 (Dict): dict containing keys - title_product, description, quantity, price, catalog_id, product_id.
     :return: "created" (201) response code
     """
@@ -158,11 +158,11 @@ def seller_change_product(*args: Tuple[TokenSeller, Dict[str, Union[str, int, li
 
 
 @authentication_check('TokenSeller')
-def seller_archive_product(*args: Tuple[TokenSeller, Dict[str, Union[str, int]]]) -> HttpResponse:
+def seller_archive_product(*args: Tuple[int, Dict[str, Union[str, int]]]) -> HttpResponse:
     """
     Adding an item to the archive.
     Args:
-        param1 (TokenSeller): instance of object TokenSeller
+        param1 (TokenSeller):
         param2 (Dict): dict containing keys - token, product_id
     :return: "created" (201) response code
     """

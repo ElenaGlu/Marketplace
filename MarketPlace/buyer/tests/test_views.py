@@ -147,39 +147,41 @@ def test_detail_product(client, fixture_profile_seller, fixture_catalog_product)
 
 
 @pytest.mark.django_db
-def test_add_cart(client, fixture_shopping_cart):
+def test_add_cart(client, fixture_shopping_cart, redis_client):
     url = reverse('buyer_add_cart')
     data = json.dumps(
-        {"token": "222",
+        {"token": VALID_TOKEN_B4,
          "product_id": 3,
          "quantity": 2
          }
     )
+    # s = ShoppingCart.objects.all().values()
+    # print(s)
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
 
 
 @pytest.mark.django_db
-def test_change_cart(client, fixture_shopping_cart):
+def test_change_cart(client, fixture_shopping_cart, redis_client):
     url = reverse('buyer_change_cart')
     data = json.dumps(
-        {"token": "222",
+        {"token": VALID_TOKEN_B4,
          "product_id": 3,
          "quantity": 5
          }
     )
-    s = ShoppingCart.objects.all().values()
-    print(s)
+    # s = ShoppingCart.objects.all().values()
+    # print(s)
     response = client.post(url, data, content_type='application/json')
 
     assert response.status_code == 201
 
 
 @pytest.mark.django_db
-def test_remove_cart(client, fixture_shopping_cart):
+def test_remove_cart(client, fixture_shopping_cart, redis_client):
     url = reverse('buyer_remove_cart')
     data = json.dumps(
-        {"token": "222",
+        {"token": VALID_TOKEN_B4,
          "product_id": 2,
          }
     )

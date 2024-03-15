@@ -4,15 +4,14 @@ import hashlib
 import json
 import os
 import smtplib
-from typing import Dict, Type, Union
+from typing import Dict, Type
 
 import jwt
 from django.http import HttpRequest
 
 from Exceptions import AppError, ErrorType
-from buyer.models import Email, TokenBuyer
+from buyer.models import Email
 from config import DJANGO_SECRET_KEY, KEY_SENDER, KEY_SENDER_PASSWORD, REDIS_HOST, REDIS_PORT
-from seller.models import TokenSeller
 
 import redis
 
@@ -258,14 +257,14 @@ class Access:
 
     @staticmethod
     def update_profile(
-            profile_id: Union[TokenBuyer, TokenSeller],
+            profile_id: int,
             user_data: Dict[str, str],
             profile_type: Type,
             token_type: str
     ) -> None:
         """
         Authorized user changes his profile data.
-        :param profile_id: instance of object TokenBuyer or TokenSeller
+        :param profile_id:
         :param user_data: dict containing keys - name, surname, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: 'TokenBuyer' or 'TokenSeller'
@@ -276,7 +275,7 @@ class Access:
             user.update(**user_data)
         else:
             user_data['password'] = Access.create_hash(user_data['password'])
-            for key in user_connection.scan_iter(f"{user.id}:{token_type}:*"):
+            for key in user_connection.scan_iter(f"{profile_id}:{token_type}:*"):
                 user_connection.delete(key)
             user.update(**user_data, active_account=False)
 
@@ -320,23 +319,6 @@ class Access:
                    }
         token = jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256")
         return f"{id_user}:{token_type}:{token}"
-
-    # @staticmethod
-    # def create_token(profile_id: Union[TokenBuyer, TokenSeller]) -> dict:
-    #     """
-    #     JWT token generation
-    #     :param profile_id: instance of object TokenBuyer or TokenSeller
-    #     :return: dict with a token and its expiration date
-    #     :return: example {"profile": obj, "token": "12345", "stop_date": 2023-12-27 10:37:08.84}
-    #     """
-    #     stop_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-    #     payload = {"sub": "admin",
-    #                "exp": stop_date
-    #                }
-    #     return {'profile': profile_id,
-    #             'token': jwt.encode(payload, DJANGO_SECRET_KEY, algorithm="HS256"),
-    #             'stop_date': stop_date
-    #             }
 
     @staticmethod
     def create_hash(password: str, salt=os.urandom(32)) -> str:

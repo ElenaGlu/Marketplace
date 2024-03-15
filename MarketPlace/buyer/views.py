@@ -4,7 +4,7 @@ from typing import Dict
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from buyer.buyer_services.shop import Shop
-from buyer.models import ProfileBuyer, TokenBuyer
+from buyer.models import ProfileBuyer
 from seller.models import Catalog
 from utils.access import Access, authentication_check
 
@@ -102,10 +102,10 @@ def buyer_logout(request: HttpRequest) -> HttpResponse:
 
 
 @authentication_check('TokenBuyer')
-def buyer_update_profile(profile_id: TokenBuyer, user_data: Dict[str, str]) -> HttpResponse:
+def buyer_update_profile(profile_id: int, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
-    :param profile_id: instance of object TokenBuyer
+    :param profile_id:
     :param user_data: dict containing keys - name, surname, password
     :return: "created" (201) response code
     """
@@ -164,10 +164,10 @@ def buyer_detail_product(request: HttpRequest) -> JsonResponse:
 
 
 @authentication_check('TokenBuyer')
-def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
+def buyer_add_cart(profile_id: int, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user adds the item to the shopping cart for further buying.
-    :param profile_id: instance of object TokenBuyer
+    :param profile_id:
     :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
     :raises AppError: if the requested quantity of product is not available
@@ -178,10 +178,10 @@ def buyer_add_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse
 
 
 @authentication_check('TokenBuyer')
-def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
+def buyer_change_cart(profile_id: int, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user changes the quantity of the product in the cart.
-    :param profile_id: instance of object TokenBuyer
+    :param profile_id:
     :param data: dict containing keys - product_id, quantity
     :return: "created" (201) response code
     :raises AppError: if the requested quantity of product is not available
@@ -192,10 +192,10 @@ def buyer_change_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpRespo
 
 
 @authentication_check('TokenBuyer')
-def buyer_remove_cart(profile_id: TokenBuyer, data: Dict[str, int]) -> HttpResponse:
+def buyer_remove_cart(profile_id: int, data: Dict[str, int]) -> HttpResponse:
     """
     Authorized user removes an item from the shopping cart.
-    :param profile_id: instance of object TokenBuyer
+    :param profile_id:
     :param data: dict containing keys - product_id, quantity
     :return: "OK" (200) response code
     :raises AppError: if there is no such product in the cart

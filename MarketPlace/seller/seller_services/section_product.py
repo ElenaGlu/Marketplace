@@ -1,14 +1,14 @@
 from typing import Dict, Union
 
-from seller.models import Catalog, CatalogProduct, Product, TokenSeller, ProfileSeller
+from seller.models import Catalog, CatalogProduct, Product, ProfileSeller
 
 
 class SectionProduct:
     @staticmethod
-    def load_product(profile_id: TokenSeller, data: Dict[str, Union[str, int, list[int]]]) -> None:
+    def load_product(profile_id: int, data: Dict[str, Union[str, int, list[int]]]) -> None:
         """
         Uploading product information.
-        :param profile_id: instance of object TokenSeller
+        :param profile_id:
         :param data: dict containing keys - title_product, description, quantity, price, catalog_id
         :return: None
         """
