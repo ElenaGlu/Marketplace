@@ -8,7 +8,7 @@ class SectionProduct:
     def load_product(profile_id: int, data: Dict[str, Union[str, int, list[int]]]) -> None:
         """
         Uploading product information.
-        :param profile_id:
+        :param profile_id: ProfileSeller's id
         :param data: dict containing keys - title_product, description, quantity, price, catalog_id
         :return: None
         """

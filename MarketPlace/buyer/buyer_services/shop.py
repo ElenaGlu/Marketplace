@@ -1,7 +1,7 @@
 from typing import Dict
 
 from Exceptions import AppError, ErrorType
-from buyer.models import ShoppingCart
+from buyer.models import Order
 from seller.models import CatalogProduct, Product
 
 
@@ -56,21 +56,21 @@ class Shop:
     def add_cart(profile_id: int, data: Dict[str, int]) -> None:
         """
         Authorized user adds the item to the shopping cart for further buying.
-        :param profile_id:
+        :param profile_id: ProfileBuyer's id
         :param data: dict containing keys - product_id, quantity
         :return: None
         :raises AppError: if the requested quantity of product is not available
         """
         data['buyer_id'] = profile_id
-        order = data['quantity']
+        quantity = data['quantity']
         available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
-        if 0 < order <= available_quantity:
-            ShoppingCart.objects.create(**data)
+        if 0 < quantity <= available_quantity:
+            Order.objects.create(**data)
         else:
             raise AppError(
                 {
                     'error_type': ErrorType.AVAILABLE_PRODUCT_ERROR,
-                    'description': f'You cannot add {order} products. Available for adding {available_quantity}'
+                    'description': f'You cannot add {quantity} products. Available for adding {available_quantity}'
                 }
             )
 
@@ -78,21 +78,20 @@ class Shop:
     def change_cart(profile_id: int, data: Dict[str, int]) -> None:
         """
         Authorized user changes the quantity of the product in the cart.
-        :param profile_id:
+        :param profile_id: ProfileBuyer's id
         :param data: dict containing keys - product_id, quantity
         :return: None
         :raises AppError: if the requested quantity of product is not available
         """
-        data['buyer_id'] = profile_id
-        order = data['quantity']
+        quantity = data['quantity']
         available_quantity = list(Product.objects.filter(id=data['product_id']).values('quantity'))[0]['quantity']
-        if 0 < order <= available_quantity:
-            ShoppingCart.objects.update(**data)
+        if 0 < quantity <= available_quantity:
+            Order.objects.filter(buyer_id=profile_id, product_id=data['product_id']).update(quantity=quantity)
         else:
             raise AppError(
                 {
                     'error_type': ErrorType.AVAILABLE_PRODUCT_ERROR,
-                    'description': f'You cannot add {order} products. Available for adding {available_quantity}'
+                    'description': f'You cannot add {quantity} products. Available for adding {available_quantity}'
                 }
             )
 
@@ -100,14 +99,14 @@ class Shop:
     def remove_cart(profile_id: int, data: Dict[str, int]) -> None:
         """
         Authorized user removes an item from the shopping cart.
-        :param profile_id:
+        :param profile_id: ProfileBuyer's id
         :param data: dict containing key - product_id
         :return: None
         :raises AppError: if there is no such product in the cart
         """
-        cart = list(ShoppingCart.objects.filter(buyer_id=profile_id, product_id=data["product_id"]).values())
-        if cart:
-            ShoppingCart.objects.filter(buyer_id=profile_id, product_id=data["product_id"]).delete()
+        order = Order.objects.filter(buyer_id=profile_id, product_id=data["product_id"])
+        if order:
+            order.delete()
         else:
             raise AppError(
                 {

@@ -13,9 +13,10 @@ class ProfileBuyer(models.Model):
     password = models.CharField(max_length=150)
     email = models.OneToOneField(Email, on_delete=models.CASCADE)
     active_account = models.BooleanField(default=False)
+    shop = models.ManyToManyField(Product, through="Order")
 
 
-class ShoppingCart(models.Model):
+class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     buyer = models.ForeignKey(ProfileBuyer, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()

@@ -24,25 +24,28 @@ REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 
+TOKEN_EMAIL_BUYER = os.getenv('TOKEN_EMAIL_BUYER')  # confirm email
+TOKEN_EMAIL_B = os.getenv('TOKEN_EMAIL_B')
+TOKEN_EMAIL_SELLER = os.getenv('TOKEN_EMAIL_SELLER')
+TOKEN_EMAIL_S = os.getenv('TOKEN_EMAIL_S')
 
-TOKEN_USER_1 = os.getenv('TOKEN_USER_1')
-TOKEN_USER_2 = os.getenv('TOKEN_USER_2')
+TOKEN_SH310 = os.getenv('TOKEN_SH310')  # reset sh310 del
 
-TOKEN_USER_B = os.getenv('TOKEN_USER_B')
-TOKEN_USER_S = os.getenv('TOKEN_USER_S')
+TOKEN_BUYER = os.getenv('TOKEN_BUYER')
+TOKEN_B = os.getenv('TOKEN_B')  # logout del
 
-TOKEN_MAIN_B = os.getenv('TOKEN_MAIN_B')
+TOKEN_SELLER = os.getenv('TOKEN_SELLER')  # logout del
+TOKEN_S = os.getenv('TOKEN_S')
 
-
-TOKEN_MAIN_4 = os.getenv('TOKEN_MAIN_4')
-TOKEN_MAIN_B4 = os.getenv('TOKEN_MAIN_B4')
-
-TOKEN_MAIN_S4 = os.getenv('TOKEN_MAIN_S4')
-TOKEN_MAIN_S = os.getenv('TOKEN_MAIN_S')
-
-
+VALID_TOKEN_BUYER = os.getenv('VALID_TOKEN_BUYER')  # reset pwd del all
 VALID_TOKEN_B = os.getenv('VALID_TOKEN_B')
-VALID_TOKEN_B4 = os.getenv('VALID_TOKEN_B4')
 
+VALID_TOKEN_SELLER = os.getenv('VALID_TOKEN_SELLER')   # reset pwd del all
 VALID_TOKEN_S = os.getenv('VALID_TOKEN_S')
-VALID_TOKEN_S4 = os.getenv('VALID_TOKEN_S4')
+
+
+TOKEN_SHOP_BUYER = os.getenv('TOKEN_SHOP_BUYER')  # active token for shop
+TOKEN_SHOP_B = os.getenv('TOKEN_SHOP_B')
+
+TOKEN_SHOP_SELLER = os.getenv('TOKEN_SHOP_SELLER')   # active token for shop
+TOKEN_SHOP_S = os.getenv('TOKEN_SHOP_S')

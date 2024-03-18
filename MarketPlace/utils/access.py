@@ -30,7 +30,7 @@ def authentication_check(token_type: str):
             user_data = json.loads(request.body)
             token_user = user_connection.keys(pattern=f"*:{token_type}:{user_data['token']}")[0]
             if token_user:
-                profile_id = token_user.split(":")[0]
+                profile_id = int(token_user.split(":")[0])
                 del user_data['token']
                 return func(profile_id, user_data)
             else:
@@ -264,7 +264,7 @@ class Access:
     ) -> None:
         """
         Authorized user changes his profile data.
-        :param profile_id:
+        :param profile_id: ProfileBuyer's id or ProfileSeller's id
         :param user_data: dict containing keys - name, surname, password
         :param profile_type: object - ProfileBuyer or ProfileSeller
         :param token_type: 'TokenBuyer' or 'TokenSeller'
@@ -288,7 +288,7 @@ class Access:
             Access.send_notification([email], f'http://localhost/update/?token={token}')
 
     @staticmethod
-    def update_password(token: str, profile_type: Type, token_type: str) -> None:
+    def update_pwd(token: str, profile_type: Type, token_type: str) -> None:
         """
         Confirms the user's profile.
         :param token: string with token
@@ -301,6 +301,7 @@ class Access:
         if token_user:
             id_user = token_user.split(":")
             profile_type.objects.filter(id=id_user[0]).update(active_account=True)
+            user_connection.delete(token_user)
         else:
             raise AppError(
                 {

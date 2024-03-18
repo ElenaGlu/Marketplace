@@ -1,8 +1,8 @@
 import pytest
 
 from buyer import models as b_models
-from config import EMAIL_1, EMAIL_2, TOKEN_USER_1, TOKEN_USER_2, TOKEN_MAIN_B, TOKEN_MAIN_4, \
-    TOKEN_MAIN_S4, VALID_TOKEN_B, VALID_TOKEN_S
+from config import EMAIL_1, EMAIL_2, TOKEN_EMAIL_BUYER, TOKEN_EMAIL_SELLER, TOKEN_SH310, TOKEN_BUYER, \
+    TOKEN_SELLER, VALID_TOKEN_BUYER, VALID_TOKEN_SELLER, TOKEN_SHOP_BUYER, TOKEN_SHOP_SELLER
 from seller import models as s_models
 from utils.access import Access, user_connection
 
@@ -10,13 +10,15 @@ from utils.access import Access, user_connection
 @pytest.fixture
 def redis_client():
     redis_client = user_connection
-    redis_client.set(TOKEN_USER_1, '')
-    redis_client.set(TOKEN_USER_2, '')
-    redis_client.set(TOKEN_MAIN_B, '')
-    redis_client.set(TOKEN_MAIN_4, '')
-    redis_client.set(TOKEN_MAIN_S4, '')
-    redis_client.set(VALID_TOKEN_B, '')
-    redis_client.set(VALID_TOKEN_S, '')
+    redis_client.set(TOKEN_EMAIL_BUYER, '')
+    redis_client.set(TOKEN_EMAIL_SELLER, '')
+    redis_client.set(TOKEN_SH310, '')
+    redis_client.set(TOKEN_BUYER, '')
+    redis_client.set(TOKEN_SELLER, '')
+    redis_client.set(VALID_TOKEN_BUYER, '')
+    redis_client.set(VALID_TOKEN_SELLER, '')
+    redis_client.set(TOKEN_SHOP_BUYER, '')
+    redis_client.set(TOKEN_SHOP_SELLER, '')
     return redis_client
 
 
@@ -25,8 +27,8 @@ def fixture_email():
     email = [
         "seller_1@mail.ru",
         "seller_2@mail.ru",
-        EMAIL_1,             # "elena.g"
-        EMAIL_2,             # 'shi3'
+        EMAIL_1,
+        EMAIL_2,
         "buyer_1@mail.ru"
     ]
     temporary = []
@@ -45,7 +47,7 @@ def fixture_profile_seller(fixture_email):
          "type_of_organization": "ИП",
          "country_of_registration": "RU",
          "password": password_hash,
-         "email_id": fixture_email[2].id,  # "elena.g"
+         "email_id": fixture_email[2].id,
          "active_account": False
          },
         {"id": 3,
@@ -54,7 +56,7 @@ def fixture_profile_seller(fixture_email):
          "type_of_organization": "ИП",
          "country_of_registration": "RU",
          "password": password_hash,
-         "email_id": fixture_email[1].id,  # "seller_2@mail.ru"
+         "email_id": fixture_email[1].id,
          "active_account": True
          },
         {"id": 4,
@@ -63,7 +65,7 @@ def fixture_profile_seller(fixture_email):
          "type_of_organization": "ИП",
          "country_of_registration": "RU",
          "password": password_hash,
-         "email_id": fixture_email[0].id,  # "seller_1@mail.ru"
+         "email_id": fixture_email[0].id,
          "active_account": True
          }
     ]
@@ -86,14 +88,14 @@ def fixture_catalog():
 def fixture_product(fixture_catalog, fixture_profile_seller):
     product = [
         {"id": 2,
-         "store_name_id": fixture_profile_seller[0].id,  # "seller_1"
+         "store_name_id": fixture_profile_seller[0].id,
          "title_product": "computer table",
          "description": "size:1500",
          "quantity": 10,
          "price": 1999,
          },
         {"id": 3,
-         "store_name_id": fixture_profile_seller[1].id,  # "seller_2"
+         "store_name_id": fixture_profile_seller[1].id,
          "title_product": "flower",
          "description": "ficus",
          "quantity": 5,
@@ -139,21 +141,21 @@ def fixture_profile_buyer(fixture_email):
          "name": "elena",
          "surname": "test_user",
          "password": password_hash,
-         "email_id": fixture_email[2].id,  # "elena.g"
+         "email_id": fixture_email[2].id,
          "active_account": False
          },
         {"id": 3,
          "name": "buyer_2",
          "surname": "test",
          "password": password_hash,
-         "email_id": fixture_email[3].id,  # "shi3"
+         "email_id": fixture_email[3].id,
          "active_account": True
          },
         {"id": 4,
          "name": "buyer_1",
          "surname": "test",
          "password": password_hash,
-         "email_id": fixture_email[4].id,  # "buyer_1@mail.ru"
+         "email_id": fixture_email[4].id,
          "active_account": True
          }
     ]
@@ -162,21 +164,17 @@ def fixture_profile_buyer(fixture_email):
         temporary.append(b_models.ProfileBuyer(**obj))
     return b_models.ProfileBuyer.objects.bulk_create(temporary)
 
+
 @pytest.fixture()
-def fixture_shopping_cart(fixture_profile_buyer, fixture_product, fixture_catalog_product):
-    shopping_cart = [
-        {"id": 2,
-         "product_id": fixture_product[0].id,
-         "buyer_id": fixture_profile_buyer[1].id,  # "shi"
-         "quantity": 2
-         },
+def fixture_order(fixture_profile_buyer, fixture_product, fixture_catalog_product):
+    order = [
         {"id": 3,
          "product_id": fixture_product[0].id,
-         "buyer_id": fixture_profile_buyer[2].id,  # "buyer_1@mail.ru"
-         "quantity": 4
+         "buyer_id": fixture_profile_buyer[1].id,
+         "quantity": 1
          }
     ]
     temporary = []
-    for obj in shopping_cart:
-        temporary.append(b_models.ShoppingCart(**obj))
-    return b_models.ShoppingCart.objects.bulk_create(temporary)
+    for obj in order:
+        temporary.append(b_models.Order(**obj))
+    return b_models.Order.objects.bulk_create(temporary)

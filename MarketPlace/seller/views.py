@@ -109,7 +109,7 @@ def seller_logout(request: HttpRequest) -> HttpResponse:
 def seller_update_profile(profile_id: int, user_data: Dict[str, str]) -> HttpResponse:
     """
     Authorized user changes his profile data.
-    :param profile_id:
+    :param profile_id: ProfileSeller's id
     :param user_data: dict containing keys - store_name, individual_taxpayer_number, type_of_organization,
     :return: "created" (201) response code
     """
@@ -126,7 +126,7 @@ def seller_update_pwd(request) -> HttpResponse:
     :raises AppError: if token is invalid
     """
     obj_auth = Access()
-    obj_auth.confirm_email(request.GET.get('token'), ProfileSeller, 'TokenSeller')
+    obj_auth.update_pwd(request.GET.get('token'), ProfileSeller, 'TokenSeller')
     return HttpResponse(status=201)
 
 
@@ -134,7 +134,7 @@ def seller_update_pwd(request) -> HttpResponse:
 def seller_load_product(profile_id: int, data: Dict[str, Union[str, int, list[int]]]) -> HttpResponse:
     """
     Uploading product information.
-    :param profile_id:
+    :param profile_id: ProfileSeller's id
     :param data: dict containing keys with title_product, description, quantity, price, catalog_id
     :return: "created" (201) response code
     """
@@ -148,7 +148,7 @@ def seller_change_product(*args: Tuple[int, Dict[str, Union[str, int, list[int]]
     """
     Change the data of an existing product
         Args:
-        param1 (TokenSeller):
+        param1 (TokenSeller): ProfileSeller's id
         param2 (Dict): dict containing keys - title_product, description, quantity, price, catalog_id, product_id.
     :return: "created" (201) response code
     """
@@ -162,7 +162,7 @@ def seller_archive_product(*args: Tuple[int, Dict[str, Union[str, int]]]) -> Htt
     """
     Adding an item to the archive.
     Args:
-        param1 (TokenSeller):
+        param1 (TokenSeller): ProfileSeller's id
         param2 (Dict): dict containing keys - token, product_id
     :return: "created" (201) response code
     """
