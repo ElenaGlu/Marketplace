@@ -35,6 +35,5 @@ urlpatterns = [
     path('seller_load_product/', s.seller_load_product, name='seller_load_product'),
     path('seller_change_product/', s.seller_change_product, name='seller_change_product'),
     path('seller_archive_product/', s.seller_archive_product, name='seller_archive_product'),
-
     path('admin/', admin.site.urls),
 ]

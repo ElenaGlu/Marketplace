@@ -2,7 +2,8 @@ import pytest
 
 from buyer import models as b_models
 from config import EMAIL_1, EMAIL_2, TOKEN_EMAIL_BUYER, TOKEN_EMAIL_SELLER, TOKEN_SH310, TOKEN_BUYER, \
-    TOKEN_SELLER, VALID_TOKEN_BUYER, VALID_TOKEN_SELLER, TOKEN_SHOP_BUYER, TOKEN_SHOP_SELLER
+    TOKEN_SELLER, VALID_TOKEN_BUYER, VALID_TOKEN_SELLER, TOKEN_SHOP_BUYER, TOKEN_SHOP_SELLER, TOKEN_UPDATE_PROFILE_B, \
+    TOKEN_UPDATE_PROFILE_S
 from seller import models as s_models
 from utils.access import Access, user_connection
 
@@ -19,6 +20,8 @@ def redis_client():
     redis_client.set(VALID_TOKEN_SELLER, '')
     redis_client.set(TOKEN_SHOP_BUYER, '')
     redis_client.set(TOKEN_SHOP_SELLER, '')
+    redis_client.set(TOKEN_UPDATE_PROFILE_B, '')
+    redis_client.set(TOKEN_UPDATE_PROFILE_S, '')
     return redis_client
 
 
@@ -41,33 +44,36 @@ def fixture_email():
 def fixture_profile_seller(fixture_email):
     password_hash = Access.create_hash('1')
     profile_seller = [
-        {"id": 2,
-         "store_name": "seller",
-         "individual_taxpayer_number": "111",
-         "type_of_organization": "ИП",
-         "country_of_registration": "RU",
-         "password": password_hash,
-         "email_id": fixture_email[2].id,
-         "active_account": False
-         },
-        {"id": 3,
-         "store_name": "seller_2",
-         "individual_taxpayer_number": "222",
-         "type_of_organization": "ИП",
-         "country_of_registration": "RU",
-         "password": password_hash,
-         "email_id": fixture_email[1].id,
-         "active_account": True
-         },
-        {"id": 4,
-         "store_name": "seller_1",
-         "individual_taxpayer_number": "111",
-         "type_of_organization": "ИП",
-         "country_of_registration": "RU",
-         "password": password_hash,
-         "email_id": fixture_email[0].id,
-         "active_account": True
-         }
+        {
+            "id": 2,
+            "store_name": "seller",
+            "individual_taxpayer_number": "111",
+            "type_of_organization": "ИП",
+            "country_of_registration": "RU",
+            "password": password_hash,
+            "email_id": fixture_email[2].id,
+            "active_account": False
+        },
+        {
+            "id": 3,
+            "store_name": "seller_2",
+            "individual_taxpayer_number": "222",
+            "type_of_organization": "ИП",
+            "country_of_registration": "RU",
+            "password": password_hash,
+            "email_id": fixture_email[1].id,
+            "active_account": True
+        },
+        {
+            "id": 4,
+            "store_name": "seller_1",
+            "individual_taxpayer_number": "111",
+            "type_of_organization": "ИП",
+            "country_of_registration": "RU",
+            "password": password_hash,
+            "email_id": fixture_email[0].id,
+            "active_account": True
+        }
     ]
     temporary = []
     for obj in profile_seller:
@@ -87,20 +93,22 @@ def fixture_catalog():
 @pytest.fixture()
 def fixture_product(fixture_catalog, fixture_profile_seller):
     product = [
-        {"id": 2,
-         "store_name_id": fixture_profile_seller[0].id,
-         "title_product": "computer table",
-         "description": "size:1500",
-         "quantity": 10,
-         "price": 1999,
-         },
-        {"id": 3,
-         "store_name_id": fixture_profile_seller[1].id,
-         "title_product": "flower",
-         "description": "ficus",
-         "quantity": 5,
-         "price": 799,
-         }
+        {
+            "id": 2,
+            "store_name_id": fixture_profile_seller[0].id,
+            "title_product": "computer table",
+            "description": "size:1500",
+            "quantity": 10,
+            "price": 1999,
+        },
+        {
+            "id": 3,
+            "store_name_id": fixture_profile_seller[1].id,
+            "title_product": "flower",
+            "description": "ficus",
+            "quantity": 5,
+            "price": 799,
+        }
     ]
     temporary = []
     for obj in product:
@@ -137,27 +145,30 @@ def fixture_catalog_product(fixture_product, fixture_catalog):
 def fixture_profile_buyer(fixture_email):
     password_hash = Access.create_hash('1')
     profile_buyer = [
-        {"id": 2,
-         "name": "elena",
-         "surname": "test_user",
-         "password": password_hash,
-         "email_id": fixture_email[2].id,
-         "active_account": False
-         },
-        {"id": 3,
-         "name": "buyer_2",
-         "surname": "test",
-         "password": password_hash,
-         "email_id": fixture_email[3].id,
-         "active_account": True
-         },
-        {"id": 4,
-         "name": "buyer_1",
-         "surname": "test",
-         "password": password_hash,
-         "email_id": fixture_email[4].id,
-         "active_account": True
-         }
+        {
+            "id": 2,
+            "name": "elena",
+            "surname": "test_user",
+            "password": password_hash,
+            "email_id": fixture_email[2].id,
+            "active_account": False
+        },
+        {
+            "id": 3,
+            "name": "buyer_2",
+            "surname": "test",
+            "password": password_hash,
+            "email_id": fixture_email[3].id,
+            "active_account": True
+        },
+        {
+            "id": 4,
+            "name": "buyer_1",
+            "surname": "test",
+            "password": password_hash,
+            "email_id": fixture_email[4].id,
+            "active_account": True
+        }
     ]
     temporary = []
     for obj in profile_buyer:
@@ -168,11 +179,12 @@ def fixture_profile_buyer(fixture_email):
 @pytest.fixture()
 def fixture_order(fixture_profile_buyer, fixture_product, fixture_catalog_product):
     order = [
-        {"id": 3,
-         "product_id": fixture_product[0].id,
-         "buyer_id": fixture_profile_buyer[1].id,
-         "quantity": 1
-         }
+        {
+            "id": 3,
+            "product_id": fixture_product[0].id,
+            "buyer_id": fixture_profile_buyer[1].id,
+            "quantity": 1
+        }
     ]
     temporary = []
     for obj in order:

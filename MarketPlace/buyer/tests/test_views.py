@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 
 from config import EMAIL_1, EMAIL_2, EMAIL_3, TOKEN_EMAIL_B, TOKEN_B, \
-    VALID_TOKEN_B, TOKEN_SHOP_B
+    VALID_TOKEN_B, TOKEN_SHOP_B, TOKEN_UPDATE_B
 
 
 @pytest.mark.django_db
@@ -112,12 +112,11 @@ def test_update_profile(client, fixture_profile_buyer, redis_client):
 @pytest.mark.django_db
 def test_update_pwd(client, fixture_profile_buyer, redis_client):
     url = reverse('buyer_update_pwd')
-    data = json.dumps(
-        {
-            'token': 'token',
-        }
-    )
-    response = client.post(url, data, content_type='application/json')
+    data = {
+        'token': TOKEN_UPDATE_B
+    }
+
+    response = client.get(url, data)
     assert response.status_code == 201
 
 
@@ -130,10 +129,12 @@ def test_provide_catalogs(client, fixture_catalog):
     assert response.status_code == 200
     assert resp_json == [
         {
-            'id': 1, 'title_catalog': 'home'
+            'id': 1,
+            'title_catalog': 'home'
         },
         {
-            'id': 2, 'title_catalog': 'furniture'
+            'id': 2,
+            'title_catalog': 'furniture'
         }
     ]
 
@@ -152,10 +153,14 @@ def test_selects_products_by_category(client, fixture_profile_seller, fixture_ca
     assert response.status_code == 200
     assert resp_json == [
         {
-            'id': 2, 'price': '1999.00', 'title_product': 'computer table'
+            'id': 2,
+            'price': '1999.00',
+            'title_product': 'computer table'
         },
         {
-            'id': 3, 'price': '799.00', 'title_product': 'flower'
+            'id': 3,
+            'price': '799.00',
+            'title_product': 'flower'
         }
     ]
 
@@ -203,10 +208,11 @@ def test_add_cart(client, fixture_order, redis_client):
 def test_change_cart(client, fixture_order, redis_client):
     url = reverse('buyer_change_cart')
     data = json.dumps(
-        {"token": TOKEN_SHOP_B,
-         "product_id": 2,
-         "quantity": 5
-         }
+        {
+            "token": TOKEN_SHOP_B,
+            "product_id": 2,
+            "quantity": 5
+        }
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
@@ -216,9 +222,10 @@ def test_change_cart(client, fixture_order, redis_client):
 def test_remove_cart(client, fixture_order, redis_client):
     url = reverse('buyer_remove_cart')
     data = json.dumps(
-        {"token": TOKEN_SHOP_B,
-         "product_id": 2,
-         }
+        {
+            "token": TOKEN_SHOP_B,
+            "product_id": 2,
+        }
     )
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 200

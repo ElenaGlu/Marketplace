@@ -3,7 +3,7 @@ import json
 import pytest
 from django.urls import reverse
 
-from config import EMAIL_1, EMAIL_4, TOKEN_EMAIL_S, TOKEN_S, VALID_TOKEN_S, TOKEN_SHOP_S
+from config import EMAIL_1, EMAIL_4, TOKEN_EMAIL_S, TOKEN_S, VALID_TOKEN_S, TOKEN_SHOP_S, TOKEN_UPDATE_S
 
 
 @pytest.mark.django_db
@@ -113,13 +113,10 @@ def test_update_profile(client, fixture_profile_seller, redis_client):
 @pytest.mark.django_db
 def test_update_pwd(client, fixture_profile_seller, redis_client):
     url = reverse('seller_update_pwd')
-    data = json.dumps(
-        {
-            'token': 'token',
-
-        }
-    )
-    response = client.post(url, data, content_type='application/json')
+    data = {
+        'token': TOKEN_UPDATE_S
+    }
+    response = client.get(url, data)
     assert response.status_code == 201
 
 

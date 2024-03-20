@@ -40,12 +40,17 @@ TOKEN_S = os.getenv('TOKEN_S')
 VALID_TOKEN_BUYER = os.getenv('VALID_TOKEN_BUYER')  # reset pwd del all
 VALID_TOKEN_B = os.getenv('VALID_TOKEN_B')
 
-VALID_TOKEN_SELLER = os.getenv('VALID_TOKEN_SELLER')   # reset pwd del all
+VALID_TOKEN_SELLER = os.getenv('VALID_TOKEN_SELLER')  # reset pwd del all
 VALID_TOKEN_S = os.getenv('VALID_TOKEN_S')
-
 
 TOKEN_SHOP_BUYER = os.getenv('TOKEN_SHOP_BUYER')  # active token for shop
 TOKEN_SHOP_B = os.getenv('TOKEN_SHOP_B')
 
-TOKEN_SHOP_SELLER = os.getenv('TOKEN_SHOP_SELLER')   # active token for shop
+TOKEN_SHOP_SELLER = os.getenv('TOKEN_SHOP_SELLER')  # active token for shop
 TOKEN_SHOP_S = os.getenv('TOKEN_SHOP_S')
+
+TOKEN_UPDATE_PROFILE_B = os.getenv('TOKEN_UPDATE_PROFILE_B')   # active token for update profile
+TOKEN_UPDATE_B = os.getenv('TOKEN_UPDATE_B')
+
+TOKEN_UPDATE_PROFILE_S = os.getenv('TOKEN_UPDATE_PROFILE_S')  # active token for update profile
+TOKEN_UPDATE_S = os.getenv('TOKEN_UPDATE_S')

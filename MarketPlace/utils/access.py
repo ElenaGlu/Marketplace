@@ -279,7 +279,7 @@ class Access:
                 user_connection.delete(key)
             user.update(**user_data, active_account=False)
 
-            new_token = Access.redis_create_token(profile_id, token_type)
+            new_token = Access.redis_create_token(profile_id, f"{token_type}:update")
             user_connection.setex(new_token, 86400, '')
             token = new_token.split(":")[2]
 
@@ -297,7 +297,7 @@ class Access:
         :return: None
         :raises AppError: if token is invalid
         """
-        token_user = user_connection.keys(pattern=f"*:{token_type}:{token}")[0]
+        token_user = user_connection.keys(pattern=f"*:{token_type}:update:{token}")[0]
         if token_user:
             id_user = token_user.split(":")
             profile_type.objects.filter(id=id_user[0]).update(active_account=True)
