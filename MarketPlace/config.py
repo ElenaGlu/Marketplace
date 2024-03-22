@@ -8,9 +8,11 @@ if os.path.exists(dotenv_path):
 
 DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-KEY_NAME = os.getenv('KEY_NAME')
-KEY_USER = os.getenv('KEY_USER')
-KEY_PASSWORD = os.getenv('KEY_PASSWORD')
+DATABASE_NAME = os.getenv('DATABASE_NAME')
+DATABASE_USER = os.getenv('DATABASE_USER')
+DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+DATABASE_HOST = os.getenv('DATABASE_HOST')
+DATABASE_PORT = os.getenv('DATABASE_PORT')
 
 KEY_SENDER = os.getenv('KEY_SENDER')
 KEY_SENDER_PASSWORD = os.getenv('KEY_SENDER_PASSWORD')

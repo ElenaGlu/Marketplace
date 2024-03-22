@@ -1,11 +1,11 @@
 services:
-  server:
+  web:
     build:
       context: .
     ports:
       - 8080:8000
-    environment:
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -29,6 +29,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  redis:
+    image: redis
+    ports:
+      - 6380:6379
 volumes:
   db-data:
 secrets:

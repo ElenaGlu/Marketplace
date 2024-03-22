@@ -69,11 +69,11 @@ WSGI_APPLICATION = 'MarketPlace.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': c.KEY_NAME,
-        'USER': c.KEY_USER,
-        'PASSWORD': c.KEY_PASSWORD,
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'NAME': c.DATABASE_NAME,
+        'USER': c.DATABASE_USER,
+        'PASSWORD': c.DATABASE_PASSWORD,
+        'HOST': c.DATABASE_HOST,
+        'PORT': c.DATABASE_PORT,
     }
 }
 
