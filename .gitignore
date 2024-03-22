@@ -3,4 +3,4 @@
 *.exe
 MarketPlace/.env
 .pytest_cache/
-.db/
+/MarketPlace/db/
