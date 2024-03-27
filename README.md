@@ -10,7 +10,7 @@
 
 ### Технологии:
 
-Python3, Django, PostgreSQL, Redis, Pytest
+Python3, Django, PostgreSQL, Redis, Pytest, Docker
 
 ### Запуск проекта на локальной машине:
 
