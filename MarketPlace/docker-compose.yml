@@ -4,6 +4,7 @@ services:
       context: .
     ports:
       - 8080:8000
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     env_file:
       - .env
     depends_on:
@@ -12,18 +13,18 @@ services:
     secrets:
       - db-password
   db:
-    image: postgres
+    image: 'postgres:16-alpine'
     restart: always
     user: postgres
     secrets:
       - db-password
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_DB=example
       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     ports:
-      - 5434:5432
+      - 5433:5432
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
@@ -31,10 +32,12 @@ services:
       retries: 5
   redis:
     image: redis
+    container_name: 'redis-server'
+    restart: unless-stopped
     ports:
-      - 6380:6379
+      - "6377:6379"
 volumes:
-  db-data:
+  postgres_data:
 secrets:
   db-password:
     file: db/password.txt
