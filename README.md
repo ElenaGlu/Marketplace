@@ -10,31 +10,18 @@
 
 ### Технологии:
 
-Python3, Django, PostgreSQL, Redis, Pytest, Docker
+Python3, Django, PostgreSQL, Redis, Pytest, Docker Compose
 
 ### Запуск проекта на локальной машине:
 
 - Клонировать репозиторий:
 ```
-https://github.com/ElenaGlu/MarketPlace.git
+https://github.com/ElenaGlu/Marketplace.git
 cd MarketPlace
-```
-### Создайте и активируйте виртуальное окружение:
-
-```
-    python -m venv venv
-    source venv/bin/activate     #для Linux
-```
-
-### Установите требуемые зависимости:
-
-- Выполните команду в терминале: 
-```
-pip install -r requirements.txt
 ```
 
 ### Запустите проект:
 
 ```
-python manage.py runserver
+sudo docker compose up --build
 ```
