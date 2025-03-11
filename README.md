@@ -12,6 +12,27 @@
 
 Python3, Django, PostgreSQL, Redis, Pytest, Docker Compose
 
+
+### Тестирование:
+
+Использован Pytest для написания интеграционных тестов и создания тестовой бд.
+
+```
+Запустить тесты можно командой: pytest из директории /MarketPlace
+
+ Структура проекта
+/buyer                
+    /tests                  # Директория с тестами
+        test_views.py       # Тесты для API покупателя
+
+/seller            
+    /tests                  # Директория с тестами
+        test_views.py       # Тесты для API продавца
+
+conftest.py - наполнение БД
+```
+
+
 ### Запуск проекта на локальной машине:
 
 - Клонировать репозиторий:
@@ -19,9 +40,6 @@ Python3, Django, PostgreSQL, Redis, Pytest, Docker Compose
 https://github.com/ElenaGlu/Marketplace.git
 cd MarketPlace
 ```
-
-### Запустите проект:
-
 ```
 sudo docker compose up --build
 ```
