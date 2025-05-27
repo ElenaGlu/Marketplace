@@ -1,6 +1,8 @@
+MarketPlace/.env
+/MarketPlace/db/
+
+.pytest_cache/
 **/__pycache__/
+
 .idea/
 *.exe
-MarketPlace/.env
-.pytest_cache/
-/MarketPlace/db/
