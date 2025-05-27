@@ -22,24 +22,10 @@ Python3, Django, PostgreSQL, Redis, Pytest, Docker Compose
 
  Структура проекта
 /buyer                
-    /tests                  # Директория с тестами
+    /tests                  
         test_views.py       # Тесты для API покупателя
 
 /seller            
-    /tests                  # Директория с тестами
+    /tests                  
         test_views.py       # Тесты для API продавца
-
-conftest.py - наполнение БД
-```
-
-
-### Запуск проекта на локальной машине:
-
-- Клонировать репозиторий:
-```
-https://github.com/ElenaGlu/Marketplace.git
-cd MarketPlace
-```
-```
-sudo docker compose up --build
 ```
